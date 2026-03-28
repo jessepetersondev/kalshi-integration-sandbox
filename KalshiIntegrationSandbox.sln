@@ -1,0 +1,78 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CD766786-0578-4923-BB0B-57B35B86694C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.Api", "src\Kalshi.Integration.Api\Kalshi.Integration.Api.csproj", "{1E6A80DD-2A59-4E4E-BC3B-0315069BFF17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.Application", "src\Kalshi.Integration.Application\Kalshi.Integration.Application.csproj", "{92AEFD73-ADDE-485F-8B24-D3F2E36D7C24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.Domain", "src\Kalshi.Integration.Domain\Kalshi.Integration.Domain.csproj", "{7707B371-19D3-4AD3-A7E6-58BB8D5A53E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.Infrastructure", "src\Kalshi.Integration.Infrastructure\Kalshi.Integration.Infrastructure.csproj", "{56626C81-3B80-4B15-BCDF-38DA26DDE7D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.Contracts", "src\Kalshi.Integration.Contracts\Kalshi.Integration.Contracts.csproj", "{5954AAE0-FE9C-4F7F-9C34-BE8BC63F30E3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{82B2250F-8913-4F48-8052-647352BD36EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.UnitTests", "tests\Kalshi.Integration.UnitTests\Kalshi.Integration.UnitTests.csproj", "{82925C48-0A53-40C6-A747-B2E635A53C6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.IntegrationTests", "tests\Kalshi.Integration.IntegrationTests\Kalshi.Integration.IntegrationTests.csproj", "{9B2C77C1-E23E-42B9-A658-4489B40E06F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kalshi.Integration.AcceptanceTests", "tests\Kalshi.Integration.AcceptanceTests\Kalshi.Integration.AcceptanceTests.csproj", "{06D9078D-DF0E-4E4A-BD1B-9378372A1A17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1E6A80DD-2A59-4E4E-BC3B-0315069BFF17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E6A80DD-2A59-4E4E-BC3B-0315069BFF17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E6A80DD-2A59-4E4E-BC3B-0315069BFF17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E6A80DD-2A59-4E4E-BC3B-0315069BFF17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92AEFD73-ADDE-485F-8B24-D3F2E36D7C24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92AEFD73-ADDE-485F-8B24-D3F2E36D7C24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92AEFD73-ADDE-485F-8B24-D3F2E36D7C24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92AEFD73-ADDE-485F-8B24-D3F2E36D7C24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7707B371-19D3-4AD3-A7E6-58BB8D5A53E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7707B371-19D3-4AD3-A7E6-58BB8D5A53E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7707B371-19D3-4AD3-A7E6-58BB8D5A53E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7707B371-19D3-4AD3-A7E6-58BB8D5A53E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{56626C81-3B80-4B15-BCDF-38DA26DDE7D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{56626C81-3B80-4B15-BCDF-38DA26DDE7D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{56626C81-3B80-4B15-BCDF-38DA26DDE7D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{56626C81-3B80-4B15-BCDF-38DA26DDE7D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5954AAE0-FE9C-4F7F-9C34-BE8BC63F30E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5954AAE0-FE9C-4F7F-9C34-BE8BC63F30E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5954AAE0-FE9C-4F7F-9C34-BE8BC63F30E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5954AAE0-FE9C-4F7F-9C34-BE8BC63F30E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82925C48-0A53-40C6-A747-B2E635A53C6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82925C48-0A53-40C6-A747-B2E635A53C6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82925C48-0A53-40C6-A747-B2E635A53C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82925C48-0A53-40C6-A747-B2E635A53C6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B2C77C1-E23E-42B9-A658-4489B40E06F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B2C77C1-E23E-42B9-A658-4489B40E06F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B2C77C1-E23E-42B9-A658-4489B40E06F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B2C77C1-E23E-42B9-A658-4489B40E06F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06D9078D-DF0E-4E4A-BD1B-9378372A1A17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06D9078D-DF0E-4E4A-BD1B-9378372A1A17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06D9078D-DF0E-4E4A-BD1B-9378372A1A17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06D9078D-DF0E-4E4A-BD1B-9378372A1A17}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1E6A80DD-2A59-4E4E-BC3B-0315069BFF17} = {CD766786-0578-4923-BB0B-57B35B86694C}
+		{92AEFD73-ADDE-485F-8B24-D3F2E36D7C24} = {CD766786-0578-4923-BB0B-57B35B86694C}
+		{7707B371-19D3-4AD3-A7E6-58BB8D5A53E8} = {CD766786-0578-4923-BB0B-57B35B86694C}
+		{56626C81-3B80-4B15-BCDF-38DA26DDE7D5} = {CD766786-0578-4923-BB0B-57B35B86694C}
+		{5954AAE0-FE9C-4F7F-9C34-BE8BC63F30E3} = {CD766786-0578-4923-BB0B-57B35B86694C}
+		{82925C48-0A53-40C6-A747-B2E635A53C6F} = {82B2250F-8913-4F48-8052-647352BD36EE}
+		{9B2C77C1-E23E-42B9-A658-4489B40E06F9} = {82B2250F-8913-4F48-8052-647352BD36EE}
+		{06D9078D-DF0E-4E4A-BD1B-9378372A1A17} = {82B2250F-8913-4F48-8052-647352BD36EE}
+	EndGlobalSection
+EndGlobal

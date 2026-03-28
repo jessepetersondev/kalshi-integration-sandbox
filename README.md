@@ -1,0 +1,146 @@
+# Kalshi Integration Sandbox
+
+Microsoft-style portfolio project for modeling Kalshi trade-intent intake, order lifecycle management, webhook delivery, and operational visibility.
+
+## Solution structure
+
+```text
+src/
+  Kalshi.Integration.Api/
+  Kalshi.Integration.Application/
+  Kalshi.Integration.Domain/
+  Kalshi.Integration.Infrastructure/
+  Kalshi.Integration.Contracts/
+
+tests/
+  Kalshi.Integration.UnitTests/
+  Kalshi.Integration.IntegrationTests/
+  Kalshi.Integration.AcceptanceTests/
+```
+
+## Architecture
+
+- **Api**: HTTP surface, versioning, Swagger, ProblemDetails, health endpoints
+- **Application**: use-case orchestration and service contracts
+- **Domain**: core business rules and entities
+- **Infrastructure**: persistence, health checks, integrations
+- **Contracts**: DTOs and API-facing contracts
+
+Dependency direction follows clean architecture / SOLID principles:
+- Domain -> no dependency on outer layers
+- Application -> depends on Domain + Contracts
+- Infrastructure -> depends on Application + Domain + Contracts
+- Api -> depends on Application + Infrastructure + Contracts
+
+## Current completed stories
+
+- JPC-1508: .NET solution and core projects
+- JPC-1509: dependency injection, configuration, logging, and health-check foundation
+- JPC-1510: API versioning, Swagger, and ProblemDetails error handling
+- JPC-1511: Node gateway project structure
+- JPC-1512: webhook simulation endpoint
+- JPC-1513: Node-to-.NET forwarding client
+- JPC-1536: application event publishing abstraction
+- JPC-1537: in-memory application event publisher for MVP
+- JPC-1538: documented RabbitMQ / Azure Service Bus extension path
+- JPC-1539: readiness and liveness endpoints
+- JPC-1540: structured request timing and dependency logging
+- JPC-1541: dedicated unit/integration/acceptance test project structure
+- JPC-1542: integration test coverage for API and persistence flows
+- JPC-1543: acceptance tests for end-to-end demo flows
+
+## Risk validation
+
+The intake flow now includes configurable risk validation for:
+- ticker/side/quantity/price checks
+- max order size
+- duplicate correlation-id rejection
+- explicit risk decision output via `POST /api/v1/risk/validate`
+
+Configuration lives under the `Risk` section in appsettings.
+
+## Persistence
+
+The app now uses **EF Core + SQLite** for local persistence.
+
+The dashboard itself is **real-data only**: no seeded rows are injected into the UI. Test projects override the connection string to isolated temporary SQLite files so automated tests do not pollute the local operator dashboard database.
+
+Tables covered by the current schema:
+- `TradeIntents`
+- `Orders`
+- `OrderEvents`
+- `PositionSnapshots`
+
+Local configuration lives in:
+- `src/Kalshi.Integration.Api/appsettings.json`
+- `src/Kalshi.Integration.Api/appsettings.Development.json`
+
+Note: the environment here does not have `dotnet-ef` installed globally, so schema creation is currently bootstrapped through `Database.EnsureCreated()` at startup rather than checked-in EF migrations.
+
+## Testing
+
+The sandbox now uses three dedicated test projects:
+- `tests/Kalshi.Integration.UnitTests`
+- `tests/Kalshi.Integration.IntegrationTests`
+- `tests/Kalshi.Integration.AcceptanceTests`
+
+See:
+- `tests/README.md`
+
+## Event publishing
+
+The sandbox now includes a transport-agnostic application event publisher seam.
+
+Key pieces:
+- `IApplicationEventPublisher` in the application boundary
+- `ApplicationEventEnvelope` as the neutral event contract
+- `InMemoryApplicationEventPublisher` for current in-process publication and tests
+
+Current published events include:
+- `trade-intent.created`
+- `order.created`
+- `execution-update.applied`
+
+This is intentionally **not** a broker integration yet.
+The current goal is to demonstrate the seam cleanly without prematurely introducing RabbitMQ or Azure Service Bus.
+
+See:
+- `docs/event-publishing.md`
+
+## Health and observability
+
+Health endpoints:
+- `/health/live` → process liveness
+- `/health/ready` → readiness including SQLite connectivity
+
+Verification steps:
+
+```bash
+cd src/Kalshi.Integration.Api
+dotnet run
+
+curl -s http://localhost:5000/health/live
+curl -s http://localhost:5000/health/ready
+```
+
+Expected behavior:
+- liveness returns **Healthy** with the `self` check
+- readiness returns **Healthy** only when the `database` dependency check succeeds
+
+Observability notes:
+- request timing is logged for every HTTP request
+- SQLite dependency calls are logged with operation names and durations
+- request failure logs include method, path, elapsed time, correlation id, and trace id
+
+## Run
+
+```bash
+cd src/Kalshi.Integration.Api
+dotnet run
+```
+
+Then open:
+- `/swagger`
+- `/health/live`
+- `/health/ready`
+- `/api/v1/system/ping`
