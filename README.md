@@ -1,6 +1,6 @@
 # Kalshi Integration Sandbox
 
-Microsoft-style portfolio project for modeling Kalshi trade-intent intake, order lifecycle management, webhook delivery, and operational visibility.
+Project for Kalshi trade-intent intake, order lifecycle management, webhook delivery, and operational visibility.
 
 ## Solution structure
 
