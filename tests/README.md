@@ -4,6 +4,8 @@ The sandbox now uses three dedicated test projects:
 
 - `Kalshi.Integration.UnitTests`
   - fast isolated tests for domain rules, application services, and small infrastructure/API components exercised without full app hosting
+  - uses **xUnit** + **Moq**
+  - enforces **85% minimum line coverage** on the unit suite
 - `Kalshi.Integration.IntegrationTests`
   - API + persistence flows using `WebApplicationFactory` and EF-backed repository behavior
 - `Kalshi.Integration.AcceptanceTests`
@@ -36,6 +38,15 @@ Run a single layer:
 dotnet test tests/Kalshi.Integration.UnitTests/Kalshi.Integration.UnitTests.csproj
 dotnet test tests/Kalshi.Integration.IntegrationTests/Kalshi.Integration.IntegrationTests.csproj
 dotnet test tests/Kalshi.Integration.AcceptanceTests/Kalshi.Integration.AcceptanceTests.csproj
+```
+
+### Unit coverage gate
+
+The unit test project collects coverage automatically and fails below the configured threshold.
+Coverage output is written to:
+
+```bash
+tests/Kalshi.Integration.UnitTests/TestResults/Coverage/coverage.cobertura.xml
 ```
 
 ## Test setup notes

@@ -1,0 +1,88 @@
+using Kalshi.Integration.Application;
+using Kalshi.Integration.Application.Abstractions;
+using Kalshi.Integration.Application.Dashboard;
+using Kalshi.Integration.Application.Operations;
+using Kalshi.Integration.Application.Risk;
+using Kalshi.Integration.Application.Trading;
+using Kalshi.Integration.Infrastructure;
+using Kalshi.Integration.Infrastructure.Operations;
+using Kalshi.Integration.Infrastructure.Persistence;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
+using Moq;
+
+namespace Kalshi.Integration.UnitTests;
+
+public sealed class DependencyInjectionTests
+{
+    [Fact]
+    public void AddApplication_ShouldRegisterServicesAndBindRiskOptions()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(Mock.Of<ITradingRepository>());
+        services.AddSingleton(Mock.Of<IOperationalIssueStore>());
+        services.AddSingleton(Mock.Of<IAuditRecordStore>());
+        services.AddSingleton(Mock.Of<IIdempotencyStore>());
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{RiskOptions.SectionName}:MaxOrderSize"] = "7",
+                [$"{RiskOptions.SectionName}:RejectDuplicateCorrelationIds"] = "false"
+            })
+            .Build();
+
+        services.AddApplication(configuration);
+
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<IOptions<RiskOptions>>().Value;
+
+        Assert.Equal(7, options.MaxOrderSize);
+        Assert.False(options.RejectDuplicateCorrelationIds);
+        Assert.NotNull(provider.GetRequiredService<RiskEvaluator>());
+        Assert.NotNull(provider.GetRequiredService<IdempotencyService>());
+        Assert.NotNull(provider.GetRequiredService<TradingService>());
+        Assert.NotNull(provider.GetRequiredService<DashboardService>());
+    }
+
+    [Fact]
+    public void AddInfrastructure_ShouldRegisterRepositoryStoresPublisherAndHealthChecks()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+
+        var databasePath = Path.Combine(Path.GetTempPath(), $"kalshi-di-{Guid.NewGuid():N}.db");
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:KalshiIntegration"] = $"Data Source={databasePath}"
+            })
+            .Build();
+
+        services.AddInfrastructure(configuration);
+
+        using (var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true }))
+        {
+            using var scope = provider.CreateScope();
+
+            Assert.IsType<EfTradingRepository>(scope.ServiceProvider.GetRequiredService<ITradingRepository>());
+            Assert.IsType<InMemoryOperationalIssueStore>(provider.GetRequiredService<IOperationalIssueStore>());
+            Assert.IsType<InMemoryAuditRecordStore>(provider.GetRequiredService<IAuditRecordStore>());
+            Assert.IsType<InMemoryIdempotencyStore>(provider.GetRequiredService<IIdempotencyStore>());
+            Assert.NotNull(scope.ServiceProvider.GetRequiredService<KalshiIntegrationDbContext>());
+            Assert.NotNull(provider.GetRequiredService<HealthCheckService>());
+
+            var publisher = provider.GetRequiredService<IApplicationEventPublisher>();
+            var concretePublisher = provider.GetRequiredService<InMemoryApplicationEventPublisher>();
+            Assert.Same(concretePublisher, publisher);
+        }
+
+        if (File.Exists(databasePath))
+        {
+            File.Delete(databasePath);
+        }
+    }
+}

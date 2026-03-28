@@ -6,18 +6,43 @@ namespace Kalshi.Integration.UnitTests;
 public sealed class IdempotencyServiceTests
 {
     [Fact]
+    public async Task LookupAsync_ShouldReturnNoneWhenKeyMissing()
+    {
+        var store = new InMemoryIdempotencyStore();
+        var service = new IdempotencyService(store);
+
+        var result = await service.LookupAsync("trade-intents", null, new { ticker = "KXBTC" });
+
+        Assert.Equal(IdempotencyLookupStatus.None, result.Status);
+        Assert.Null(result.Record);
+    }
+
+    [Fact]
+    public async Task SaveResponseAsync_ShouldIgnoreBlankKeys()
+    {
+        var store = new InMemoryIdempotencyStore();
+        var service = new IdempotencyService(store);
+
+        await service.SaveResponseAsync("trade-intents", " ", new { ticker = "KXBTC" }, 201, new { id = Guid.NewGuid() });
+        var lookup = await store.GetAsync("trade-intents", "", CancellationToken.None);
+
+        Assert.Null(lookup);
+    }
+
+    [Fact]
     public async Task LookupAsync_ShouldReplayWhenKeyAndPayloadMatchSavedResponse()
     {
         var store = new InMemoryIdempotencyStore();
         var service = new IdempotencyService(store);
         var request = new { ticker = "KXBTC", side = "yes", quantity = 1 };
 
-        await service.SaveResponseAsync("trade-intents", "idem-1", request, 201, new { id = Guid.NewGuid(), ticker = "KXBTC" });
+        await service.SaveResponseAsync("trade-intents", " idem-1 ", request, 201, new { id = Guid.NewGuid(), ticker = "KXBTC" });
         var result = await service.LookupAsync("trade-intents", "idem-1", request);
 
         Assert.Equal(IdempotencyLookupStatus.Replay, result.Status);
         Assert.NotNull(result.Record);
         Assert.Equal(201, result.Record!.StatusCode);
+        Assert.Equal("idem-1", result.Record.Key);
     }
 
     [Fact]

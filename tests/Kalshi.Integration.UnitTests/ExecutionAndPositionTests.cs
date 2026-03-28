@@ -23,9 +23,25 @@ public sealed class ExecutionAndPositionTests
     }
 
     [Fact]
+    public void ExecutionEvent_ShouldRejectEmptyOrderId()
+    {
+        Assert.Throws<DomainException>(() => new ExecutionEvent(Guid.Empty, OrderStatus.Accepted, 0, DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
     public void ExecutionEvent_ShouldRejectNegativeFilledQuantity()
     {
         Assert.Throws<DomainException>(() => new ExecutionEvent(Guid.NewGuid(), OrderStatus.Accepted, -1, DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public void ExecutionEvent_WithId_ShouldOverrideGeneratedId()
+    {
+        var persistedId = Guid.NewGuid();
+        var executionEvent = new ExecutionEvent(Guid.NewGuid(), OrderStatus.Accepted, 0, DateTimeOffset.UtcNow)
+            .WithId(persistedId);
+
+        Assert.Equal(persistedId, executionEvent.Id);
     }
 
     [Fact]
@@ -37,5 +53,25 @@ public sealed class ExecutionAndPositionTests
         Assert.Equal(TradeSide.No, snapshot.Side);
         Assert.Equal(4, snapshot.Contracts);
         Assert.Equal(0.6544m, snapshot.AveragePrice);
+    }
+
+    [Fact]
+    public void PositionSnapshot_ShouldRejectBlankTicker()
+    {
+        Assert.Throws<DomainException>(() => new PositionSnapshot(" ", TradeSide.Yes, 1, 0.10m, DateTimeOffset.UtcNow));
+    }
+
+    [Fact]
+    public void PositionSnapshot_ShouldRejectNegativeContracts()
+    {
+        Assert.Throws<DomainException>(() => new PositionSnapshot("KXBTC", TradeSide.Yes, -1, 0.10m, DateTimeOffset.UtcNow));
+    }
+
+    [Theory]
+    [InlineData(-0.01)]
+    [InlineData(1.01)]
+    public void PositionSnapshot_ShouldRejectInvalidAveragePrice(decimal averagePrice)
+    {
+        Assert.Throws<DomainException>(() => new PositionSnapshot("KXBTC", TradeSide.Yes, 1, averagePrice, DateTimeOffset.UtcNow));
     }
 }

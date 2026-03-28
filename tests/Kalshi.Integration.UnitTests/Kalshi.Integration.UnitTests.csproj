@@ -7,18 +7,31 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <CollectCoverage>true</CollectCoverage>
+    <CoverletOutput>TestResults/Coverage/</CoverletOutput>
+    <CoverletOutputFormat>cobertura</CoverletOutputFormat>
+    <Threshold>85</Threshold>
+    <ThresholdType>line</ThresholdType>
+    <ThresholdStat>total</ThresholdStat>
+    <SkipAutoProps>true</SkipAutoProps>
+    <ExcludeByFile>**/src/Kalshi.Integration.Api/Controllers/*.cs,**/src/Kalshi.Integration.Api/Program.cs,**/src/Kalshi.Integration.Contracts/**/*.cs,**/src/Kalshi.Integration.Infrastructure/Operations/DatabaseReadinessHealthCheck.cs,**/src/Kalshi.Integration.Infrastructure/Persistence/EfTradingRepository.cs,**/src/Kalshi.Integration.Infrastructure/Persistence/KalshiIntegrationDbContext.cs,**/src/Kalshi.Integration.Infrastructure/Persistence/Entities/*.cs</ExcludeByFile>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+    <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
