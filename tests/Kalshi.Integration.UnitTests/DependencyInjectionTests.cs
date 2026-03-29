@@ -26,7 +26,9 @@ public sealed class DependencyInjectionTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddSingleton(Mock.Of<ITradingRepository>());
+        services.AddSingleton(Mock.Of<ITradeIntentRepository>());
+        services.AddSingleton(Mock.Of<IOrderRepository>());
+        services.AddSingleton(Mock.Of<IPositionSnapshotRepository>());
         services.AddSingleton(Mock.Of<IOperationalIssueStore>());
         services.AddSingleton(Mock.Of<IAuditRecordStore>());
         services.AddSingleton(Mock.Of<IIdempotencyStore>());
@@ -49,6 +51,7 @@ public sealed class DependencyInjectionTests
         Assert.NotNull(provider.GetRequiredService<RiskEvaluator>());
         Assert.NotNull(provider.GetRequiredService<IdempotencyService>());
         Assert.NotNull(provider.GetRequiredService<TradingService>());
+        Assert.NotNull(provider.GetRequiredService<TradingQueryService>());
         Assert.NotNull(provider.GetRequiredService<DashboardService>());
     }
 
@@ -72,7 +75,10 @@ public sealed class DependencyInjectionTests
         {
             using var scope = provider.CreateScope();
 
-            Assert.IsType<EfTradingRepository>(scope.ServiceProvider.GetRequiredService<ITradingRepository>());
+            var concreteRepository = scope.ServiceProvider.GetRequiredService<EfTradingRepository>();
+            Assert.Same(concreteRepository, scope.ServiceProvider.GetRequiredService<ITradeIntentRepository>());
+            Assert.Same(concreteRepository, scope.ServiceProvider.GetRequiredService<IOrderRepository>());
+            Assert.Same(concreteRepository, scope.ServiceProvider.GetRequiredService<IPositionSnapshotRepository>());
             Assert.IsType<InMemoryOperationalIssueStore>(provider.GetRequiredService<IOperationalIssueStore>());
             Assert.IsType<InMemoryAuditRecordStore>(provider.GetRequiredService<IAuditRecordStore>());
             Assert.IsType<InMemoryIdempotencyStore>(provider.GetRequiredService<IIdempotencyStore>());
@@ -162,7 +168,9 @@ public sealed class DependencyInjectionTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddSingleton(Mock.Of<ITradingRepository>());
+        services.AddSingleton(Mock.Of<ITradeIntentRepository>());
+        services.AddSingleton(Mock.Of<IOrderRepository>());
+        services.AddSingleton(Mock.Of<IPositionSnapshotRepository>());
         services.AddSingleton(Mock.Of<IOperationalIssueStore>());
         services.AddSingleton(Mock.Of<IAuditRecordStore>());
         services.AddSingleton(Mock.Of<IIdempotencyStore>());

@@ -1,0 +1,9 @@
+using Kalshi.Integration.Domain.Positions;
+
+namespace Kalshi.Integration.Application.Abstractions;
+
+public interface IPositionSnapshotRepository
+{
+    Task UpsertPositionSnapshotAsync(PositionSnapshot positionSnapshot, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PositionSnapshot>> GetPositionsAsync(CancellationToken cancellationToken = default);
+}

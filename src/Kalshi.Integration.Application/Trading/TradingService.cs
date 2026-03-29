@@ -2,7 +2,6 @@ using Kalshi.Integration.Application.Abstractions;
 using Kalshi.Integration.Application.Risk;
 using Kalshi.Integration.Contracts.Integrations;
 using Kalshi.Integration.Contracts.Orders;
-using Kalshi.Integration.Contracts.Positions;
 using Kalshi.Integration.Contracts.TradeIntents;
 using Kalshi.Integration.Domain.Common;
 using Kalshi.Integration.Domain.Executions;
@@ -14,12 +13,20 @@ namespace Kalshi.Integration.Application.Trading;
 
 public sealed class TradingService
 {
-    private readonly ITradingRepository _repository;
+    private readonly ITradeIntentRepository _tradeIntentRepository;
+    private readonly IOrderRepository _orderRepository;
+    private readonly IPositionSnapshotRepository _positionSnapshotRepository;
     private readonly RiskEvaluator _riskEvaluator;
 
-    public TradingService(ITradingRepository repository, RiskEvaluator riskEvaluator)
+    public TradingService(
+        ITradeIntentRepository tradeIntentRepository,
+        IOrderRepository orderRepository,
+        IPositionSnapshotRepository positionSnapshotRepository,
+        RiskEvaluator riskEvaluator)
     {
-        _repository = repository;
+        _tradeIntentRepository = tradeIntentRepository;
+        _orderRepository = orderRepository;
+        _positionSnapshotRepository = positionSnapshotRepository;
         _riskEvaluator = riskEvaluator;
     }
 
@@ -39,7 +46,7 @@ public sealed class TradingService
             request.StrategyName,
             request.CorrelationId);
 
-        await _repository.AddTradeIntentAsync(tradeIntent, cancellationToken);
+        await _tradeIntentRepository.AddTradeIntentAsync(tradeIntent, cancellationToken);
 
         return new TradeIntentResponse(
             tradeIntent.Id,
@@ -60,23 +67,23 @@ public sealed class TradingService
 
     public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken = default)
     {
-        var tradeIntent = await _repository.GetTradeIntentAsync(request.TradeIntentId, cancellationToken);
+        var tradeIntent = await _tradeIntentRepository.GetTradeIntentAsync(request.TradeIntentId, cancellationToken);
         if (tradeIntent is null)
         {
             throw new KeyNotFoundException($"Trade intent '{request.TradeIntentId}' was not found.");
         }
 
         var order = new Order(tradeIntent);
-        await _repository.AddOrderAsync(order, cancellationToken);
-        await _repository.AddOrderEventAsync(new ExecutionEvent(order.Id, order.CurrentStatus, order.FilledQuantity, order.CreatedAt), cancellationToken);
-        await _repository.UpsertPositionSnapshotAsync(new PositionSnapshot(tradeIntent.Ticker, tradeIntent.Side, 0, tradeIntent.LimitPrice, order.UpdatedAt), cancellationToken);
+        await _orderRepository.AddOrderAsync(order, cancellationToken);
+        await _orderRepository.AddOrderEventAsync(new ExecutionEvent(order.Id, order.CurrentStatus, order.FilledQuantity, order.CreatedAt), cancellationToken);
+        await _positionSnapshotRepository.UpsertPositionSnapshotAsync(new PositionSnapshot(tradeIntent.Ticker, tradeIntent.Side, 0, tradeIntent.LimitPrice, order.UpdatedAt), cancellationToken);
 
-        return await BuildOrderResponseAsync(order, cancellationToken);
+        return await OrderResponseFactory.CreateAsync(order, _orderRepository, cancellationToken);
     }
 
     public async Task<ExecutionUpdateResult> ApplyExecutionUpdateAsync(ExecutionUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        var order = await _repository.GetOrderAsync(request.OrderId, cancellationToken);
+        var order = await _orderRepository.GetOrderAsync(request.OrderId, cancellationToken);
         if (order is null)
         {
             throw new KeyNotFoundException($"Order '{request.OrderId}' was not found.");
@@ -86,12 +93,12 @@ public sealed class TradingService
         var occurredAt = request.OccurredAt ?? DateTimeOffset.UtcNow;
 
         order.TransitionTo(status, request.FilledQuantity, occurredAt);
-        await _repository.UpdateOrderAsync(order, cancellationToken);
+        await _orderRepository.UpdateOrderAsync(order, cancellationToken);
 
         var executionEvent = new ExecutionEvent(order.Id, status, order.FilledQuantity, occurredAt);
-        await _repository.AddOrderEventAsync(executionEvent, cancellationToken);
+        await _orderRepository.AddOrderEventAsync(executionEvent, cancellationToken);
 
-        await _repository.UpsertPositionSnapshotAsync(
+        await _positionSnapshotRepository.UpsertPositionSnapshotAsync(
             new PositionSnapshot(
                 order.TradeIntent.Ticker,
                 order.TradeIntent.Side,
@@ -100,53 +107,8 @@ public sealed class TradingService
                 occurredAt),
             cancellationToken);
 
-        var orderResponse = await BuildOrderResponseAsync(order, cancellationToken);
+        var orderResponse = await OrderResponseFactory.CreateAsync(order, _orderRepository, cancellationToken);
         return new ExecutionUpdateResult(order.Id, status.ToString().ToLowerInvariant(), order.FilledQuantity, occurredAt, orderResponse);
-    }
-
-    public async Task<OrderResponse?> GetOrderAsync(Guid orderId, CancellationToken cancellationToken = default)
-    {
-        var order = await _repository.GetOrderAsync(orderId, cancellationToken);
-        if (order is null)
-        {
-            return null;
-        }
-
-        return await BuildOrderResponseAsync(order, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<PositionResponse>> GetPositionsAsync(CancellationToken cancellationToken = default)
-    {
-        var positions = await _repository.GetPositionsAsync(cancellationToken);
-        return positions
-            .Select(position => new PositionResponse(
-                position.Ticker,
-                position.Side.ToString().ToLowerInvariant(),
-                position.Contracts,
-                position.AveragePrice,
-                position.AsOf))
-            .ToArray();
-    }
-
-    private async Task<OrderResponse> BuildOrderResponseAsync(Order order, CancellationToken cancellationToken)
-    {
-        var events = await _repository.GetOrderEventsAsync(order.Id, cancellationToken);
-        return new OrderResponse(
-            order.Id,
-            order.TradeIntent.Id,
-            order.TradeIntent.Ticker,
-            order.TradeIntent.Side.ToString().ToLowerInvariant(),
-            order.TradeIntent.Quantity,
-            order.TradeIntent.LimitPrice,
-            order.TradeIntent.StrategyName,
-            order.CurrentStatus.ToString().ToLowerInvariant(),
-            order.FilledQuantity,
-            order.CreatedAt,
-            order.UpdatedAt,
-            events
-                .OrderBy(e => e.OccurredAt)
-                .Select(e => new OrderEventResponse(e.Status.ToString().ToLowerInvariant(), e.FilledQuantity, e.OccurredAt))
-                .ToArray());
     }
 
     private static TradeSide ParseSide(string side)

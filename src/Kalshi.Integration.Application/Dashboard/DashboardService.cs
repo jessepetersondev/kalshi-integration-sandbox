@@ -6,20 +6,26 @@ namespace Kalshi.Integration.Application.Dashboard;
 
 public sealed class DashboardService
 {
-    private readonly ITradingRepository _repository;
+    private readonly IOrderRepository _orderRepository;
+    private readonly IPositionSnapshotRepository _positionSnapshotRepository;
     private readonly IOperationalIssueStore _issueStore;
     private readonly IAuditRecordStore _auditRecordStore;
 
-    public DashboardService(ITradingRepository repository, IOperationalIssueStore issueStore, IAuditRecordStore auditRecordStore)
+    public DashboardService(
+        IOrderRepository orderRepository,
+        IPositionSnapshotRepository positionSnapshotRepository,
+        IOperationalIssueStore issueStore,
+        IAuditRecordStore auditRecordStore)
     {
-        _repository = repository;
+        _orderRepository = orderRepository;
+        _positionSnapshotRepository = positionSnapshotRepository;
         _issueStore = issueStore;
         _auditRecordStore = auditRecordStore;
     }
 
     public async Task<IReadOnlyList<DashboardOrderSummaryResponse>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        var orders = await _repository.GetOrdersAsync(cancellationToken);
+        var orders = await _orderRepository.GetOrdersAsync(cancellationToken);
         return orders
             .OrderByDescending(order => order.UpdatedAt)
             .Select(order => new DashboardOrderSummaryResponse(
@@ -37,7 +43,7 @@ public sealed class DashboardService
 
     public async Task<IReadOnlyList<PositionResponse>> GetPositionsAsync(CancellationToken cancellationToken = default)
     {
-        var positions = await _repository.GetPositionsAsync(cancellationToken);
+        var positions = await _positionSnapshotRepository.GetPositionsAsync(cancellationToken);
         return positions
             .OrderBy(position => position.Ticker)
             .Select(position => new PositionResponse(
@@ -51,12 +57,12 @@ public sealed class DashboardService
 
     public async Task<IReadOnlyList<DashboardEventResponse>> GetEventsAsync(int limit = 50, CancellationToken cancellationToken = default)
     {
-        var orders = await _repository.GetOrdersAsync(cancellationToken);
+        var orders = await _orderRepository.GetOrdersAsync(cancellationToken);
         var events = new List<DashboardEventResponse>();
 
         foreach (var order in orders)
         {
-            var orderEvents = await _repository.GetOrderEventsAsync(order.Id, cancellationToken);
+            var orderEvents = await _orderRepository.GetOrderEventsAsync(order.Id, cancellationToken);
             events.AddRange(orderEvents.Select(orderEvent => new DashboardEventResponse(
                 order.Id,
                 order.TradeIntent.Ticker,

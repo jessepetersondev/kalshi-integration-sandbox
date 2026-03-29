@@ -7,7 +7,7 @@ using Kalshi.Integration.Domain.TradeIntents;
 
 namespace Kalshi.Integration.Infrastructure.Persistence;
 
-public sealed class InMemoryTradingRepository : ITradingRepository
+public sealed class InMemoryTradingRepository : ITradeIntentRepository, IOrderRepository, IPositionSnapshotRepository
 {
     private readonly ConcurrentDictionary<Guid, TradeIntent> _tradeIntents = new();
     private readonly ConcurrentDictionary<Guid, Order> _orders = new();

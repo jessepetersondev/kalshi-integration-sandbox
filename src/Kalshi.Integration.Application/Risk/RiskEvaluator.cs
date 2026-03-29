@@ -6,12 +6,12 @@ namespace Kalshi.Integration.Application.Risk;
 
 public sealed class RiskEvaluator
 {
-    private readonly ITradingRepository _repository;
+    private readonly ITradeIntentRepository _tradeIntentRepository;
     private readonly RiskOptions _options;
 
-    public RiskEvaluator(ITradingRepository repository, IOptions<RiskOptions> options)
+    public RiskEvaluator(ITradeIntentRepository tradeIntentRepository, IOptions<RiskOptions> options)
     {
-        _repository = repository;
+        _tradeIntentRepository = tradeIntentRepository;
         _options = options.Value;
     }
 
@@ -53,7 +53,7 @@ public sealed class RiskEvaluator
 
         if (_options.RejectDuplicateCorrelationIds && !string.IsNullOrWhiteSpace(request.CorrelationId))
         {
-            var existing = await _repository.GetTradeIntentByCorrelationIdAsync(request.CorrelationId.Trim(), cancellationToken);
+            var existing = await _tradeIntentRepository.GetTradeIntentByCorrelationIdAsync(request.CorrelationId.Trim(), cancellationToken);
             if (existing is not null)
             {
                 duplicateDetected = true;

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Kalshi.Integration.Infrastructure.Persistence;
 
-public sealed class EfTradingRepository : ITradingRepository
+public sealed class EfTradingRepository : ITradeIntentRepository, IOrderRepository, IPositionSnapshotRepository
 {
     private static readonly Action<ILogger, string, string, double, Exception?> DependencyCallSucceeded =
         LoggerMessage.Define<string, string, double>(

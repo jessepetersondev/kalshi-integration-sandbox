@@ -16,15 +16,16 @@ public sealed class DashboardServiceTests
     {
         var olderOrder = CreateOrder("KXBTC", TradeSide.Yes, OrderStatus.Accepted, 1, DateTimeOffset.UtcNow.AddMinutes(-10));
         var newerOrder = CreateOrder("KXETH", TradeSide.No, OrderStatus.Filled, 2, DateTimeOffset.UtcNow.AddMinutes(-1));
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
+        var orderRepository = new Mock<IOrderRepository>(MockBehavior.Strict);
+        var positionSnapshotRepository = new Mock<IPositionSnapshotRepository>(MockBehavior.Strict);
         var issueStore = new Mock<IOperationalIssueStore>(MockBehavior.Strict);
         var auditStore = new Mock<IAuditRecordStore>(MockBehavior.Strict);
 
-        repository
+        orderRepository
             .Setup(x => x.GetOrdersAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { olderOrder, newerOrder });
 
-        var service = new DashboardService(repository.Object, issueStore.Object, auditStore.Object);
+        var service = new DashboardService(orderRepository.Object, positionSnapshotRepository.Object, issueStore.Object, auditStore.Object);
 
         var result = await service.GetOrdersAsync();
 
@@ -33,17 +34,18 @@ public sealed class DashboardServiceTests
         Assert.Equal("no", result[0].Side);
         Assert.Equal("filled", result[0].Status);
         Assert.Equal(olderOrder.Id, result[1].Id);
-        repository.VerifyAll();
+        orderRepository.VerifyAll();
     }
 
     [Fact]
     public async Task GetPositionsAsync_ShouldSortByTicker()
     {
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
+        var orderRepository = new Mock<IOrderRepository>(MockBehavior.Strict);
+        var positionSnapshotRepository = new Mock<IPositionSnapshotRepository>(MockBehavior.Strict);
         var issueStore = new Mock<IOperationalIssueStore>(MockBehavior.Strict);
         var auditStore = new Mock<IAuditRecordStore>(MockBehavior.Strict);
 
-        repository
+        positionSnapshotRepository
             .Setup(x => x.GetPositionsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[]
             {
@@ -51,13 +53,13 @@ public sealed class DashboardServiceTests
                 new PositionSnapshot("KXBTC", TradeSide.Yes, 2, 0.45m, DateTimeOffset.UtcNow)
             });
 
-        var service = new DashboardService(repository.Object, issueStore.Object, auditStore.Object);
+        var service = new DashboardService(orderRepository.Object, positionSnapshotRepository.Object, issueStore.Object, auditStore.Object);
 
         var result = await service.GetPositionsAsync();
 
         Assert.Equal("KXBTC", result[0].Ticker);
         Assert.Equal("KXETH", result[1].Ticker);
-        repository.VerifyAll();
+        positionSnapshotRepository.VerifyAll();
     }
 
     [Fact]
@@ -67,21 +69,22 @@ public sealed class DashboardServiceTests
         var newerOrder = CreateOrder("KXETH", TradeSide.No, OrderStatus.Filled, 2, DateTimeOffset.UtcNow.AddMinutes(-1));
         var olderEvent = new ExecutionEvent(olderOrder.Id, OrderStatus.Accepted, 0, DateTimeOffset.UtcNow.AddMinutes(-9));
         var newestEvent = new ExecutionEvent(newerOrder.Id, OrderStatus.Filled, 2, DateTimeOffset.UtcNow.AddMinutes(-2));
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
+        var orderRepository = new Mock<IOrderRepository>(MockBehavior.Strict);
+        var positionSnapshotRepository = new Mock<IPositionSnapshotRepository>(MockBehavior.Strict);
         var issueStore = new Mock<IOperationalIssueStore>(MockBehavior.Strict);
         var auditStore = new Mock<IAuditRecordStore>(MockBehavior.Strict);
 
-        repository
+        orderRepository
             .Setup(x => x.GetOrdersAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { olderOrder, newerOrder });
-        repository
+        orderRepository
             .Setup(x => x.GetOrderEventsAsync(olderOrder.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { olderEvent });
-        repository
+        orderRepository
             .Setup(x => x.GetOrderEventsAsync(newerOrder.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { newestEvent });
 
-        var service = new DashboardService(repository.Object, issueStore.Object, auditStore.Object);
+        var service = new DashboardService(orderRepository.Object, positionSnapshotRepository.Object, issueStore.Object, auditStore.Object);
 
         var result = await service.GetEventsAsync(limit: 1);
 
@@ -89,7 +92,7 @@ public sealed class DashboardServiceTests
         Assert.Equal(newerOrder.Id, evt.OrderId);
         Assert.Equal("KXETH", evt.Ticker);
         Assert.Equal("filled", evt.Status);
-        repository.VerifyAll();
+        orderRepository.VerifyAll();
     }
 
     [Fact]
@@ -97,7 +100,8 @@ public sealed class DashboardServiceTests
     {
         var olderIssue = OperationalIssue.Create("validation", "warning", "risk", "Older", occurredAt: DateTimeOffset.UtcNow.AddHours(-3));
         var newerIssue = OperationalIssue.Create("validation", "error", "risk", "Newer", occurredAt: DateTimeOffset.UtcNow.AddMinutes(-10));
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
+        var orderRepository = new Mock<IOrderRepository>(MockBehavior.Strict);
+        var positionSnapshotRepository = new Mock<IPositionSnapshotRepository>(MockBehavior.Strict);
         var issueStore = new Mock<IOperationalIssueStore>(MockBehavior.Strict);
         var auditStore = new Mock<IAuditRecordStore>(MockBehavior.Strict);
 
@@ -105,7 +109,7 @@ public sealed class DashboardServiceTests
             .Setup(x => x.GetRecentAsync("validation", 12, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { olderIssue, newerIssue });
 
-        var service = new DashboardService(repository.Object, issueStore.Object, auditStore.Object);
+        var service = new DashboardService(orderRepository.Object, positionSnapshotRepository.Object, issueStore.Object, auditStore.Object);
 
         var result = await service.GetIssuesAsync("validation", 12);
 
@@ -127,7 +131,8 @@ public sealed class DashboardServiceTests
             idempotencyKey: "idem-1",
             resourceId: "order-1",
             occurredAt: DateTimeOffset.UtcNow.AddMinutes(-5));
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
+        var orderRepository = new Mock<IOrderRepository>(MockBehavior.Strict);
+        var positionSnapshotRepository = new Mock<IPositionSnapshotRepository>(MockBehavior.Strict);
         var issueStore = new Mock<IOperationalIssueStore>(MockBehavior.Strict);
         var auditStore = new Mock<IAuditRecordStore>(MockBehavior.Strict);
 
@@ -135,7 +140,7 @@ public sealed class DashboardServiceTests
             .Setup(x => x.GetRecentAsync("trading", 6, 25, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { record });
 
-        var service = new DashboardService(repository.Object, issueStore.Object, auditStore.Object);
+        var service = new DashboardService(orderRepository.Object, positionSnapshotRepository.Object, issueStore.Object, auditStore.Object);
 
         var result = await service.GetAuditRecordsAsync("trading", 6, 25);
 

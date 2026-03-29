@@ -73,7 +73,10 @@ public static class DependencyInjection
             });
 
         services.AddDbContext<KalshiIntegrationDbContext>(options => ConfigureDatabaseProvider(options, normalizedProvider, connectionString!));
-        services.AddScoped<ITradingRepository, EfTradingRepository>();
+        services.AddScoped<EfTradingRepository>();
+        services.AddScoped<ITradeIntentRepository>(serviceProvider => serviceProvider.GetRequiredService<EfTradingRepository>());
+        services.AddScoped<IOrderRepository>(serviceProvider => serviceProvider.GetRequiredService<EfTradingRepository>());
+        services.AddScoped<IPositionSnapshotRepository>(serviceProvider => serviceProvider.GetRequiredService<EfTradingRepository>());
         services.AddSingleton<IOperationalIssueStore, InMemoryOperationalIssueStore>();
         services.AddSingleton<IAuditRecordStore, InMemoryAuditRecordStore>();
         services.AddSingleton<IIdempotencyStore, InMemoryIdempotencyStore>();

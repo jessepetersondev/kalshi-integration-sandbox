@@ -11,11 +11,11 @@ namespace Kalshi.Integration.Api.Controllers;
 [Route("api/v{version:apiVersion}/positions")]
 public sealed class PositionsController : ControllerBase
 {
-    private readonly TradingService _tradingService;
+    private readonly TradingQueryService _tradingQueryService;
 
-    public PositionsController(TradingService tradingService)
+    public PositionsController(TradingQueryService tradingQueryService)
     {
-        _tradingService = tradingService;
+        _tradingQueryService = tradingQueryService;
     }
 
     [HttpGet]
@@ -23,7 +23,7 @@ public sealed class PositionsController : ControllerBase
     [ProducesResponseType(typeof(IReadOnlyList<PositionResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
-        var positions = await _tradingService.GetPositionsAsync(cancellationToken);
+        var positions = await _tradingQueryService.GetPositionsAsync(cancellationToken);
         return Ok(positions);
     }
 }

@@ -144,6 +144,14 @@ Dependency direction follows clean architecture / SOLID principles:
 - Infrastructure -> depends on Application + Domain + Contracts
 - Api -> depends on Application + Infrastructure + Contracts
 
+### Architecture guardrails
+
+- Keep write orchestration in command services such as `TradingService`; route API reads through query-oriented services such as `TradingQueryService`.
+- Prefer aggregate-focused interfaces like `ITradeIntentRepository`, `IOrderRepository`, and `IPositionSnapshotRepository` over expanding a single catch-all repository contract.
+- Put domain invariants and state transitions in `src/Kalshi.Integration.Domain`; application services should coordinate dependencies rather than re-implement domain rules.
+- Keep controllers thin: request metadata, auth, idempotency, audit, and publishing can stay at the API boundary, but persistence and business decisions belong below it.
+- Reuse a shared infrastructure adapter when the storage technology is the same, but only expose the narrower application interfaces each caller actually needs.
+
 ## End-to-end flow summary
 
 ```text
@@ -192,7 +200,7 @@ External callback simulator
 Hosts the HTTP API, auth setup, ProblemDetails, Swagger behavior, readiness/liveness endpoints, and operator-facing surface.
 
 ### `src/Kalshi.Integration.Application`
-Contains the orchestration layer for trade intents, orders, risk evaluation, integration update handling, and application event publishing boundaries.
+Contains the orchestration layer for trade intents, orders, risk evaluation, command/query services, and application event publishing boundaries.
 
 ### `src/Kalshi.Integration.Domain`
 Contains the core business model and rules that should remain independent from transport, framework, or storage choices.
@@ -236,6 +244,7 @@ Represents the external/customer-facing integration seam and makes webhook-style
 - JPC-1555: JWT authentication and policy-based authorization for trading and operational endpoints
 - JPC-1556: strongly typed options validation and startup configuration guards
 - JPC-1557: outbound HTTP integration hardening with `IHttpClientFactory`, resilience, and correlation propagation
+- JPC-1559: refined command/query and repository boundaries to keep application responsibilities cohesive
 
 ## Local setup
 

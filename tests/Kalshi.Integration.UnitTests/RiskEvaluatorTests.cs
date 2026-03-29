@@ -12,12 +12,12 @@ public sealed class RiskEvaluatorTests
     [Fact]
     public async Task EvaluateTradeIntent_ShouldAcceptValidTradeIntent()
     {
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
-        repository
+        var tradeIntentRepository = new Mock<ITradeIntentRepository>(MockBehavior.Strict);
+        tradeIntentRepository
             .Setup(x => x.GetTradeIntentByCorrelationIdAsync("corr-1", It.IsAny<CancellationToken>()))
             .ReturnsAsync((TradeIntent?)null);
 
-        var evaluator = CreateEvaluator(repository.Object, new RiskOptions { MaxOrderSize = 5 });
+        var evaluator = CreateEvaluator(tradeIntentRepository.Object, new RiskOptions { MaxOrderSize = 5 });
 
         var result = await evaluator.EvaluateTradeIntentAsync(new CreateTradeIntentRequest("KXBTC", "yes", 2, 0.45m, "Breakout", "corr-1"));
 
@@ -25,14 +25,14 @@ public sealed class RiskEvaluatorTests
         Assert.Equal("accepted", result.Decision);
         Assert.Empty(result.Reasons);
         Assert.False(result.DuplicateCorrelationIdDetected);
-        repository.VerifyAll();
+        tradeIntentRepository.VerifyAll();
     }
 
     [Fact]
     public async Task EvaluateTradeIntent_ShouldRejectInvalidInputCollection()
     {
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
-        var evaluator = CreateEvaluator(repository.Object, new RiskOptions { MaxOrderSize = 3, RejectDuplicateCorrelationIds = false });
+        var tradeIntentRepository = new Mock<ITradeIntentRepository>(MockBehavior.Strict);
+        var evaluator = CreateEvaluator(tradeIntentRepository.Object, new RiskOptions { MaxOrderSize = 3, RejectDuplicateCorrelationIds = false });
 
         var result = await evaluator.EvaluateTradeIntentAsync(new CreateTradeIntentRequest(" ", "maybe", 0, 1.5m, " ", null));
 
@@ -43,7 +43,7 @@ public sealed class RiskEvaluatorTests
         Assert.Contains("Quantity must be greater than zero.", result.Reasons);
         Assert.Contains("Limit price must be greater than 0 and less than or equal to 1.", result.Reasons);
         Assert.Contains("Strategy name is required.", result.Reasons);
-        repository.Verify(
+        tradeIntentRepository.Verify(
             x => x.GetTradeIntentByCorrelationIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
@@ -51,8 +51,8 @@ public sealed class RiskEvaluatorTests
     [Fact]
     public async Task EvaluateTradeIntent_ShouldRejectOversizedOrders()
     {
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
-        var evaluator = CreateEvaluator(repository.Object, new RiskOptions { MaxOrderSize = 3 });
+        var tradeIntentRepository = new Mock<ITradeIntentRepository>(MockBehavior.Strict);
+        var evaluator = CreateEvaluator(tradeIntentRepository.Object, new RiskOptions { MaxOrderSize = 3 });
 
         var result = await evaluator.EvaluateTradeIntentAsync(new CreateTradeIntentRequest("KXBTC", "yes", 4, 0.45m, "Breakout", null));
 
@@ -64,35 +64,35 @@ public sealed class RiskEvaluatorTests
     public async Task EvaluateTradeIntent_ShouldRejectDuplicateCorrelationIds()
     {
         var existingIntent = new TradeIntent("KXBTC", TradeSide.Yes, 1, 0.40m, "Test", "dup-1");
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
-        repository
+        var tradeIntentRepository = new Mock<ITradeIntentRepository>(MockBehavior.Strict);
+        tradeIntentRepository
             .Setup(x => x.GetTradeIntentByCorrelationIdAsync("dup-1", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingIntent);
 
-        var evaluator = CreateEvaluator(repository.Object, new RiskOptions());
+        var evaluator = CreateEvaluator(tradeIntentRepository.Object, new RiskOptions());
 
         var result = await evaluator.EvaluateTradeIntentAsync(new CreateTradeIntentRequest("KXBTC", "no", 1, 0.60m, "Fade", "dup-1"));
 
         Assert.False(result.Accepted);
         Assert.True(result.DuplicateCorrelationIdDetected);
         Assert.Contains(result.Reasons, reason => reason.Contains("already been used", StringComparison.OrdinalIgnoreCase));
-        repository.VerifyAll();
+        tradeIntentRepository.VerifyAll();
     }
 
     [Fact]
     public async Task EvaluateTradeIntent_ShouldSkipDuplicateLookupWhenFeatureDisabled()
     {
-        var repository = new Mock<ITradingRepository>(MockBehavior.Strict);
-        var evaluator = CreateEvaluator(repository.Object, new RiskOptions { RejectDuplicateCorrelationIds = false });
+        var tradeIntentRepository = new Mock<ITradeIntentRepository>(MockBehavior.Strict);
+        var evaluator = CreateEvaluator(tradeIntentRepository.Object, new RiskOptions { RejectDuplicateCorrelationIds = false });
 
         var result = await evaluator.EvaluateTradeIntentAsync(new CreateTradeIntentRequest("KXBTC", "yes", 1, 0.32m, "Scalp", "corr-disabled"));
 
         Assert.True(result.Accepted);
-        repository.Verify(
+        tradeIntentRepository.Verify(
             x => x.GetTradeIntentByCorrelationIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
-    private static RiskEvaluator CreateEvaluator(ITradingRepository repository, RiskOptions options)
-        => new(repository, Options.Create(options));
+    private static RiskEvaluator CreateEvaluator(ITradeIntentRepository tradeIntentRepository, RiskOptions options)
+        => new(tradeIntentRepository, Options.Create(options));
 }

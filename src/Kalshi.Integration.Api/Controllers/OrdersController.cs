@@ -19,6 +19,7 @@ public sealed class OrdersController : ControllerBase
     private const string IdempotencyScope = "orders";
 
     private readonly TradingService _tradingService;
+    private readonly TradingQueryService _tradingQueryService;
     private readonly IAuditRecordStore _auditRecordStore;
     private readonly IApplicationEventPublisher _applicationEventPublisher;
     private readonly IdempotencyService _idempotencyService;
@@ -26,12 +27,14 @@ public sealed class OrdersController : ControllerBase
 
     public OrdersController(
         TradingService tradingService,
+        TradingQueryService tradingQueryService,
         IAuditRecordStore auditRecordStore,
         IApplicationEventPublisher applicationEventPublisher,
         IdempotencyService idempotencyService,
         ILogger<OrdersController> logger)
     {
         _tradingService = tradingService;
+        _tradingQueryService = tradingQueryService;
         _auditRecordStore = auditRecordStore;
         _applicationEventPublisher = applicationEventPublisher;
         _idempotencyService = idempotencyService;
@@ -155,7 +158,7 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var order = await _tradingService.GetOrderAsync(id, cancellationToken);
+        var order = await _tradingQueryService.GetOrderAsync(id, cancellationToken);
         if (order is null)
         {
             return Problem(title: "Order not found", detail: $"Order '{id}' was not found.", statusCode: StatusCodes.Status404NotFound);
