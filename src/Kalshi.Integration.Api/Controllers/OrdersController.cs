@@ -128,6 +128,7 @@ public sealed class OrdersController : ControllerBase
                         ["ticker"] = response.Ticker,
                         ["side"] = response.Side,
                         ["quantity"] = response.Quantity.ToString(CultureInfo.InvariantCulture),
+                        ["limitPrice"] = response.LimitPrice.ToString(CultureInfo.InvariantCulture),
                         ["status"] = response.Status,
                     }),
                 cancellationToken);

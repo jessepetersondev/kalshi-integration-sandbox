@@ -128,6 +128,7 @@ public sealed class TradeIntentsController : ControllerBase
                         ["ticker"] = response.Ticker,
                         ["side"] = response.Side,
                         ["quantity"] = response.Quantity.ToString(CultureInfo.InvariantCulture),
+                        ["limitPrice"] = response.LimitPrice.ToString(CultureInfo.InvariantCulture),
                         ["strategyName"] = response.StrategyName,
                     }),
                 cancellationToken);
