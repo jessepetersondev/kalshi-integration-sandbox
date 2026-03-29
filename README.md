@@ -1,6 +1,13 @@
 # Kalshi Integration Sandbox
 
-Project for Kalshi trade-intent intake, order lifecycle management, webhook delivery, and operational visibility.
+A portfolio-grade integration sandbox that models how a production-minded trading workflow can move from API intake through validation, persistence, outbound integration, execution updates, and operator visibility.
+
+The project intentionally mixes:
+- **ASP.NET Core / .NET 8** for the core service boundary
+- **Node.js** for an external-facing integration gateway / webhook simulator
+- **clean architecture + SOLID boundaries** for long-term maintainability
+- **EF Core with SQLite or SQL Server / Azure SQL** for practical local and cloud stories
+- **Azure-oriented deployment/CI artifacts** for Microsoft-stack credibility
 
 ## Repository
 
@@ -10,7 +17,72 @@ Project for Kalshi trade-intent intake, order lifecycle management, webhook deli
 
 This repository is published and accessible for portfolio review.
 
-## Solution structure
+## Why this project exists
+
+This sandbox is designed to demonstrate the kind of engineering work that sits between product features and real operational systems:
+- intake and validation of external requests
+- traceable order lifecycle handling
+- durable persistence and event history
+- external integration forwarding
+- production-minded health, auth, logging, and deployment patterns
+
+It is not trying to be a real exchange client. It is trying to be a credible **integration-service example** that is easy to review, run, and discuss.
+
+## What the system does
+
+At a high level, the sandbox supports these flows:
+- accept a **trade intent**
+- apply **risk validation**
+- create and query **orders**
+- receive **execution updates** through a Node gateway and apply them to the .NET backend
+- persist **order events** and **position snapshots**
+- expose an **operator dashboard** and operational endpoints
+
+## Main user flows
+
+### 1) Trade intent intake
+A client submits a trade intent to the .NET API.
+
+The request is:
+- validated for shape and business rules
+- checked against configured risk rules
+- persisted when accepted
+- rejected with problem-details responses when invalid
+
+### 2) Order creation and lifecycle queries
+Accepted trade intents can be converted into orders.
+
+The system then supports:
+- creating orders
+- retrieving individual orders
+- viewing current position snapshots
+- tracking order status changes over time
+
+### 3) Execution update ingestion
+The Node gateway simulates an external callback/integration layer.
+
+It can:
+- accept simulated webhook payloads
+- validate payload shape
+- forward updates to the .NET API
+- surface forwarding failures clearly
+
+The .NET API then:
+- applies valid status transitions
+- records append-only order events
+- updates position snapshots
+- preserves retry-safe/idempotent handling behavior
+
+### 4) Operator visibility
+The app includes operational endpoints and dashboard support for:
+- orders
+- positions
+- integration/dependency visibility
+- health and readiness state
+
+## Architecture overview
+
+### Solution structure
 
 ```text
 src/
@@ -24,21 +96,121 @@ tests/
   Kalshi.Integration.UnitTests/
   Kalshi.Integration.IntegrationTests/
   Kalshi.Integration.AcceptanceTests/
+
+node-gateway/
+  src/
+  test/
 ```
 
-## Architecture
+### Layer responsibilities
 
-- **Api**: HTTP surface, versioning, Swagger, ProblemDetails, health endpoints
-- **Application**: use-case orchestration and service contracts
-- **Domain**: core business rules and entities
-- **Infrastructure**: persistence, health checks, integrations
-- **Contracts**: DTOs and API-facing contracts
+- **Api**
+  - HTTP endpoints
+  - versioning
+  - auth / authorization
+  - Swagger / ProblemDetails
+  - health endpoints
+  - dashboard/static host behavior
+
+- **Application**
+  - use-case orchestration
+  - service contracts
+  - validation/risk coordination
+  - application events
+
+- **Domain**
+  - entities and invariants
+  - lifecycle rules
+  - transition safety
+  - business exceptions
+
+- **Infrastructure**
+  - EF Core persistence
+  - outbound integrations
+  - health checks
+  - publisher implementations
+  - provider-specific wiring
+
+- **Contracts**
+  - request/response DTOs
+  - API-facing contracts
+  - cross-boundary schemas
+
+### Dependency direction
 
 Dependency direction follows clean architecture / SOLID principles:
 - Domain -> no dependency on outer layers
 - Application -> depends on Domain + Contracts
 - Infrastructure -> depends on Application + Domain + Contracts
 - Api -> depends on Application + Infrastructure + Contracts
+
+## End-to-end flow summary
+
+```text
+Client
+  -> ASP.NET Core API
+    -> validation + risk rules
+    -> persistence (trade intents / orders / events / positions)
+    -> operational APIs and dashboard
+
+External callback simulator
+  -> Node gateway
+    -> forwards validated execution updates
+    -> ASP.NET Core API applies order-state transitions
+```
+
+## Technology stack
+
+### Backend
+- .NET 8
+- ASP.NET Core
+- EF Core
+- SQLite for clean local development
+- SQL Server / Azure SQL support for cloud-oriented deployment
+
+### Integration gateway
+- Node.js 22
+- lightweight HTTP service for webhook simulation and forwarding
+- native `node --test` test coverage
+
+### Quality / tooling
+- xUnit
+- Moq
+- integration and acceptance tests
+- repo-wide analyzers and format enforcement
+- Azure DevOps pipeline
+
+### Deployment / cloud story
+- Dockerfiles for API and gateway
+- docker-compose for local multi-service runs
+- Azure Container Apps deployment guidance
+- Azure-oriented configuration + secret handling guidance
+
+## Project structure explained
+
+### `src/Kalshi.Integration.Api`
+Hosts the HTTP API, auth setup, ProblemDetails, Swagger behavior, readiness/liveness endpoints, and operator-facing surface.
+
+### `src/Kalshi.Integration.Application`
+Contains the orchestration layer for trade intents, orders, risk evaluation, integration update handling, and application event publishing boundaries.
+
+### `src/Kalshi.Integration.Domain`
+Contains the core business model and rules that should remain independent from transport, framework, or storage choices.
+
+### `src/Kalshi.Integration.Infrastructure`
+Implements persistence, outbound integration behavior, health checks, migration support, and broker/integration adapters.
+
+### `src/Kalshi.Integration.Contracts`
+Contains the DTOs and request/response contracts shared across the service boundary.
+
+### `tests/*`
+The repo uses dedicated test projects by type:
+- unit tests for fast domain/application coverage
+- integration tests for API + persistence behavior
+- acceptance tests for the main end-to-end demo path
+
+### `node-gateway/`
+Represents the external/customer-facing integration seam and makes webhook-style execution updates testable without a real external system.
 
 ## Current completed stories
 
@@ -64,6 +236,55 @@ Dependency direction follows clean architecture / SOLID principles:
 - JPC-1555: JWT authentication and policy-based authorization for trading and operational endpoints
 - JPC-1556: strongly typed options validation and startup configuration guards
 - JPC-1557: outbound HTTP integration hardening with `IHttpClientFactory`, resilience, and correlation propagation
+
+## Local setup
+
+### Prerequisites
+- .NET SDK 8
+- Node.js 22
+- Docker (optional, for containerized local runs)
+
+### Quick start
+
+#### API
+```bash
+cd src/Kalshi.Integration.Api
+dotnet run
+```
+
+#### Node gateway
+```bash
+cd node-gateway
+node src/server.js
+```
+
+The default local story uses SQLite.
+
+If you want SQL Server / Azure SQL instead, configure:
+- `Database__Provider=SqlServer` or `Database__Provider=AzureSql`
+- `ConnectionStrings__KalshiIntegration`
+
+See:
+- `docs/database-providers.md`
+- `docs/environment-configuration.md`
+
+## Containerized local run
+
+From the repo root:
+
+```bash
+docker compose up --build
+```
+
+Published endpoints:
+- API: `http://localhost:5000`
+- Gateway: `http://localhost:3001`
+
+Stop the stack:
+
+```bash
+docker compose down
+```
 
 ## Authentication and authorization
 
@@ -92,39 +313,9 @@ Protected examples:
 - `POST /api/v1/integrations/execution-updates`
 - `GET /api/v1/system/dependencies/node-gateway`
 
-### Swagger exposure behavior
-
-- **Development / Testing**: Swagger UI is available
-- **Non-development**: Swagger stays off by default
-- To opt in outside development, set:
-
-```json
-{
-  "OpenApi": {
-    "EnableSwaggerInNonDevelopment": true
-  }
-}
-```
-
 ### Local token workflow
 
 For local work, the app can issue a development JWT so you can exercise protected endpoints without wiring a real identity provider first.
-
-Development settings example:
-
-```json
-{
-  "Authentication": {
-    "Jwt": {
-      "Issuer": "kalshi-integration-sandbox",
-      "Audience": "kalshi-integration-sandbox-clients",
-      "SigningKey": "kalshi-integration-sandbox-local-dev-signing-key-please-change",
-      "TokenLifetimeMinutes": 60,
-      "EnableDevelopmentTokenIssuance": true
-    }
-  }
-}
-```
 
 Issue a token locally:
 
@@ -143,210 +334,44 @@ curl -s http://localhost:5000/api/v1/dashboard/orders \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-The operator dashboard also includes a local token box plus a **Issue local dev token** shortcut for development/testing environments.
+## Health and observability
 
-## Startup configuration validation
+Health endpoints:
+- `/health/live` → process liveness
+- `/health/ready` → readiness including configured dependencies
 
-Critical configuration now binds to **strongly typed options** and fails fast during startup when invalid.
+Current observability includes:
+- structured request timing logs
+- database/dependency call logging
+- correlation-id and trace-id flow
+- provider-aware dependency naming in logs
 
-Validated areas currently include:
-- `Risk`
-- `Database`
-- `EventPublishing`
-- `RabbitMq`
-- `Integrations:NodeGateway`
-- `Authentication:Jwt`
-- `OpenApi`
-
-Examples of guarded settings:
-- `Risk:MaxOrderSize` must be greater than zero
-- `Database:Provider` must resolve to `Sqlite`, `SqlServer`, or `AzureSql`
-- `ConnectionStrings:KalshiIntegration` is required for the selected provider
-- `EventPublishing:Provider` must be `InMemory` or `RabbitMq`
-- `RabbitMq:Port` must be a valid TCP port
-- `Integrations:NodeGateway:BaseUrl` must be an absolute URL
-- `Integrations:NodeGateway:HealthPath` must start with `/`
-- `Authentication:Jwt:SigningKey` must be configured and at least 32 characters long
-
-This keeps broken local/app-host configuration from surfacing later as runtime-only failures.
-
-## Risk validation
-
-The intake flow now includes configurable risk validation for:
-- ticker/side/quantity/price checks
-- max order size
-- duplicate correlation-id rejection
-- explicit risk decision output via `POST /api/v1/risk/validate`
-
-Configuration lives under the `Risk` section in appsettings.
-
-## Persistence
-
-The sandbox now supports **EF Core with either SQLite or SQL Server / Azure SQL**.
-
-### Current provider story
-
-- **SQLite** remains the default local-development provider
-- **SQL Server / Azure SQL** is supported through provider selection/configuration
-- the local/test workflow stays simple because you can still run the app without provisioning external infrastructure
-
-The dashboard itself is **real-data only**: no seeded rows are injected into the UI. Test projects override the connection string to isolated temporary SQLite files so automated tests do not pollute the local operator dashboard database.
-
-Tables covered by the current schema:
-- `TradeIntents`
-- `Orders`
-- `OrderEvents`
-- `PositionSnapshots`
-
-Configuration lives in:
-- `src/Kalshi.Integration.Api/appsettings.json`
-- `src/Kalshi.Integration.Api/appsettings.Development.json`
-
-Key settings:
-- `Database:Provider=Sqlite` → default local provider
-- `Database:Provider=SqlServer` → SQL Server / Azure SQL provider
-- `Database:Provider=AzureSql` → accepted alias for SQL Server provider
-- `ConnectionStrings:KalshiIntegration` → active database connection string
-- `Database:ApplyMigrationsOnStartup=true` → apply checked-in EF Core migrations at app startup
-
-Schema changes are tracked through checked-in EF Core migrations under:
-- `src/Kalshi.Integration.Infrastructure/Persistence/Migrations/`
-
-The design-time `KalshiIntegrationDbContextFactory` now reads appsettings, environment variables, and command-line overrides so `dotnet ef` can target either provider.
-
-For migration / database update work, the repo includes a local tool manifest for `dotnet-ef`:
-
-```bash
-dotnet tool restore
-
-dotnet ef database update \
-  --project src/Kalshi.Integration.Infrastructure \
-  --startup-project src/Kalshi.Integration.Api
-```
-
-For SQL Server / Azure SQL, set the provider + connection string first, then run the same EF command.
-
-Examples and connection-string guidance live in:
-- `docs/database-providers.md`
-
-## Deployment artifacts
-
-The repo now includes lightweight container/deployment artifacts for local multi-service runs:
-- `src/Kalshi.Integration.Api/Dockerfile`
-- `node-gateway/Dockerfile`
-- `docker-compose.yml`
-- `.dockerignore`
-
-Quick start:
-
-```bash
-docker compose up --build
-```
-
-Local container endpoints:
-- API: `http://localhost:5000`
-- Gateway: `http://localhost:3001`
-
-Quick verification:
-
-```bash
-curl -s http://localhost:5000/health/live
-curl -s http://localhost:5000/health/ready
-curl -s http://localhost:3001/health
-```
-
-Notes:
-- the compose stack uses SQLite on a named Docker volume for local/demo runs
-- the API container applies migrations on startup
-- the gateway talks to the API through the compose network
-- these artifacts are meant for local/demo deployment; Azure-oriented hosting can override the database, secrets, and networking model later
-
-See:
+See also:
+- `docs/environment-configuration.md`
 - `docs/deployment-artifacts.md`
 - `docs/azure-deployment-guide.md`
 
-## Azure deployment guide
+## Event publishing
 
-The recommended Azure target for this repo is **Azure Container Apps** with:
-- one container app for the .NET API
-- one container app for the Node gateway
-- Azure Container Registry for images
-- Azure SQL Database for persistence
-- Azure Key Vault for secrets
-- Log Analytics / Azure Monitor for platform diagnostics
+The sandbox includes a transport-agnostic application event publishing seam with:
+- `IApplicationEventPublisher`
+- `InMemoryApplicationEventPublisher`
+- `RabbitMqApplicationEventPublisher`
 
-Why this target fits:
-- the repo already has Dockerfiles for both services
-- multi-service HTTP deployment is straightforward
-- environment-variable and secret-based configuration maps directly to the current app design
+Current published events include:
+- `trade-intent.created`
+- `order.created`
+- `execution-update.applied`
 
 See:
-- `docs/azure-deployment-guide.md`
-
-## Environment configuration
-
-The repo now has an explicit **local / shared-dev / cloud** configuration story.
-
-Checked-in configuration assets:
-- `src/Kalshi.Integration.Api/appsettings.json` → baseline defaults
-- `src/Kalshi.Integration.Api/appsettings.Development.json` → safe local-development defaults
-- `src/Kalshi.Integration.Api/appsettings.Cloud.example.json` → cloud-oriented template only
-- `node-gateway/.env.example` → Node gateway local template only
-
-Configuration strategy:
-- keep defaults and examples in source control
-- keep secrets out of source control
-- use environment variables, ASP.NET Core user secrets, or a platform secret store for sensitive values
-- keep local override files untracked
-
-See:
-- `docs/environment-configuration.md`
-
-### Secret-handling expectations
-
-Do **not** commit:
-- real JWT signing keys
-- non-local SQL Server / Azure SQL connection strings
-- RabbitMQ passwords
-- real `.env` files
-- ad hoc local override files with secrets
-
-The `.gitignore` now excludes common local override paths such as:
-- `node-gateway/.env`
-- `src/Kalshi.Integration.Api/appsettings.Local.json`
-
-### Quick local configuration
-
-API example:
-
-```bash
-export ASPNETCORE_ENVIRONMENT=Development
-export Authentication__Jwt__SigningKey='replace-with-a-long-secret-value'
-export ConnectionStrings__KalshiIntegration='Data Source=kalshi-integration-sandbox.dev.db'
-```
-
-Node gateway example:
-
-```bash
-export PORT=3001
-export BACKEND_BASE_URL='http://localhost:5145'
-```
+- `docs/event-publishing.md`
 
 ## Testing
 
-The sandbox now uses three dedicated test projects:
+The repo uses three dedicated test projects:
 - `tests/Kalshi.Integration.UnitTests`
 - `tests/Kalshi.Integration.IntegrationTests`
 - `tests/Kalshi.Integration.AcceptanceTests`
-
-See:
-- `tests/README.md`
-
-Repo-wide code quality is enforced through:
-- `Directory.Build.props`
-- `Directory.Build.targets`
-- `Directory.Packages.props`
-- `.editorconfig`
 
 Local verification commands:
 
@@ -356,136 +381,47 @@ dotnet build KalshiIntegrationSandbox.sln
 dotnet test KalshiIntegrationSandbox.sln
 ```
 
-## Azure DevOps CI
+Node gateway tests:
 
-The repo now includes an Azure DevOps pipeline at `azure-pipelines.yml`.
-
-The pipeline is designed to:
-- restore the .NET solution
-- verify formatting with `dotnet format --verify-no-changes`
-- build the .NET solution
-- run all .NET tests in the solution
-- run the Node gateway test suite
-- publish .NET test results
-- publish the unit-test Cobertura coverage report generated by the xUnit + Moq unit project
-
-The published unit coverage summary comes from:
-- `tests/Kalshi.Integration.UnitTests/TestResults/Coverage/coverage.cobertura.xml`
-
-## Event publishing
-
-The sandbox includes a transport-agnostic application event publisher seam with two infrastructure implementations:
-
-- `IApplicationEventPublisher` in the application boundary
-- `ApplicationEventEnvelope` as the neutral event contract
-- `InMemoryApplicationEventPublisher` for local/default in-process publication and tests
-- `RabbitMqApplicationEventPublisher` for broker-backed publishing when enabled via configuration
-
-Current published events include:
-- `trade-intent.created`
-- `order.created`
-- `execution-update.applied`
-
-Provider selection is configuration-driven:
-- `EventPublishing:Provider=InMemory` → default local publisher
-- `EventPublishing:Provider=RabbitMq` → publishes serialized application events to the configured RabbitMQ exchange with correlation/idempotency metadata mapped into headers
+```bash
+cd node-gateway
+node --test
+```
 
 See:
-- `docs/event-publishing.md`
+- `tests/README.md`
 
-## Outbound integrations
+## Azure DevOps CI
 
-The current outbound HTTP dependency path is the **Node gateway** integration.
+The repo includes an Azure DevOps pipeline at `azure-pipelines.yml`.
 
-That path is now wired through `IHttpClientFactory` and hardened with:
-- managed `HttpClient` registration instead of ad hoc client construction
-- explicit per-attempt timeout configuration
-- explicit retry configuration via the standard resilience handler
-- correlation-id propagation using `x-correlation-id`
-- structured dependency logging aligned with the rest of the app
-- optional readiness participation when `Integrations:NodeGateway:IncludeInReadiness=true`
+The pipeline currently:
+- restores the .NET solution
+- verifies formatting with `dotnet format --verify-no-changes`
+- builds the solution
+- runs .NET tests
+- runs Node gateway tests
+- publishes .NET test results
+- publishes Cobertura unit-test coverage artifacts
 
-Relevant settings:
+## Deployment and cloud readiness
 
-```json
-{
-  "Integrations": {
-    "NodeGateway": {
-      "Enabled": true,
-      "BaseUrl": "http://localhost:3001",
-      "HealthPath": "/health",
-      "TimeoutSeconds": 5,
-      "RetryAttempts": 2,
-      "IncludeInReadiness": false
-    }
-  }
-}
-```
+The repo now includes:
+- environment configuration guidance for local/dev/cloud
+- Dockerfiles for API and gateway
+- local multi-service `docker-compose.yml`
+- Azure Container Apps deployment guidance
 
-Operator probe endpoint:
-- `GET /api/v1/system/dependencies/node-gateway`
+See:
+- `docs/environment-configuration.md`
+- `docs/deployment-artifacts.md`
+- `docs/azure-deployment-guide.md`
 
-That endpoint is protected by the `operations.read` policy so outbound dependency visibility stays intentional.
+## Notes for reviewers
 
-## Health and observability
-
-Health endpoints:
-- `/health/live` → process liveness
-- `/health/ready` → readiness including connectivity to the configured database provider
-
-Verification steps:
-
-```bash
-cd src/Kalshi.Integration.Api
-dotnet run
-
-curl -s http://localhost:5000/health/live
-curl -s http://localhost:5000/health/ready
-```
-
-Expected behavior:
-- liveness returns **Healthy** with the `self` check
-- readiness returns **Healthy** only when the `database` dependency check succeeds
-- readiness messages reflect the active provider (for example SQLite vs SQL Server / Azure SQL)
-
-Observability notes:
-- request timing is logged for every HTTP request
-- database dependency calls are logged with operation names and durations
-- provider-aware dependency names are emitted in logs (`sqlite`, `sqlserver`, or `database`)
-- request failure logs include method, path, elapsed time, correlation id, and trace id
-
-## Run
-
-Default local run (SQLite):
-
-```bash
-cd src/Kalshi.Integration.Api
-dotnet run
-```
-
-If you want to run against SQL Server / Azure SQL instead, set `Database__Provider=SqlServer` and `ConnectionStrings__KalshiIntegration` first. See:
-- `docs/database-providers.md`
-
-Then open:
-- `/swagger`
-- `/health/live`
-- `/health/ready`
-- `/api/v1/system/ping`
-
-## Containerized local run
-
-From the repo root:
-
-```bash
-docker compose up --build
-```
-
-The compose stack publishes:
-- API on `http://localhost:5000`
-- Node gateway on `http://localhost:3001`
-
-To stop it:
-
-```bash
-docker compose down
-```
+If you are reviewing this as a portfolio project, the important signals are:
+- clear service boundaries instead of framework-driven sprawl
+- production-minded validation, auth, persistence, and health design
+- realistic integration seams through the Node gateway
+- test coverage across unit, integration, and acceptance layers
+- credible Microsoft-stack deployment and CI stories without overcomplicating the repo
