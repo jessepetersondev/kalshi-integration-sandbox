@@ -132,7 +132,6 @@ The Node gateway exists to demonstrate:
 These are useful as “next step” items during interviews:
 
 - OpenTelemetry tracing and metrics with OTLP / Azure Monitor export
-- stronger Azure DevOps PR quality gates and dependency scanning
 - Azure infrastructure as code for Container Apps, ACR, Key Vault, and SQL resources
 - further SOLID refinement as services grow
 - richer dashboard filtering and operational drill-down views

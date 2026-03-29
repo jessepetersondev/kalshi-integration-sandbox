@@ -279,12 +279,17 @@ Recommended repeatable workflow:
 
 The current Azure DevOps pipeline already validates:
 
+- `dotnet restore` with NuGet vulnerability auditing enabled in the pipeline
 - `dotnet format`
 - `dotnet build`
 - `dotnet test`
 - `node --test`
 
-That means the missing step for future automation is deployment orchestration, not basic build validation.
+That means the missing step for future automation is deployment orchestration, not PR validation or baseline quality gates.
+
+For the intended protected-branch and build-validation setup, see:
+
+- `docs/azure-devops-quality-gates.md`
 
 ## Important notes
 

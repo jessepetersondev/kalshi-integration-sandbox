@@ -5,6 +5,7 @@ trigger:
       - main
 
 pr:
+  autoCancel: true
   branches:
     include:
       - master
@@ -17,6 +18,7 @@ variables:
   BuildConfiguration: Release
   DotNetVersion: 8.0.x
   NodeVersion: 22.x
+  Solution: $(Build.SourcesDirectory)/KalshiIntegrationSandbox.sln
   DotNetTestResultsDirectory: $(Agent.TempDirectory)/dotnet-test-results
   UnitCoverageSummaryFile: $(Build.SourcesDirectory)/tests/Kalshi.Integration.UnitTests/TestResults/Coverage/coverage.cobertura.xml
   UnitCoverageArtifactDirectory: $(Build.SourcesDirectory)/tests/Kalshi.Integration.UnitTests/TestResults/Coverage
@@ -42,17 +44,22 @@ stages:
             inputs:
               versionSpec: $(NodeVersion)
 
-          - script: dotnet restore KalshiIntegrationSandbox.sln
-            displayName: Restore .NET solution
+          - script: >-
+              dotnet restore "$(Solution)"
+              --verbosity minimal
+              -p:NuGetAudit=true
+              -p:NuGetAuditMode=all
+              -p:NuGetAuditLevel=high
+            displayName: Restore .NET solution and audit NuGet dependencies
 
-          - script: dotnet format KalshiIntegrationSandbox.sln --verify-no-changes --no-restore
+          - script: dotnet format "$(Solution)" --verify-no-changes --no-restore
             displayName: Verify .NET formatting
 
-          - script: dotnet build KalshiIntegrationSandbox.sln --configuration $(BuildConfiguration) --no-restore
-            displayName: Build .NET solution
+          - script: dotnet build "$(Solution)" --configuration $(BuildConfiguration) --no-restore -p:ContinuousIntegrationBuild=true
+            displayName: Build .NET solution with analyzer enforcement
 
           - script: >-
-              dotnet test KalshiIntegrationSandbox.sln
+              dotnet test "$(Solution)"
               --configuration $(BuildConfiguration)
               --no-build
               --logger "trx;LogFileName=kalshi-integration.trx"

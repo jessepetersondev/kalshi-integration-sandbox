@@ -245,6 +245,7 @@ Represents the external/customer-facing integration seam and makes webhook-style
 - JPC-1556: strongly typed options validation and startup configuration guards
 - JPC-1557: outbound HTTP integration hardening with `IHttpClientFactory`, resilience, and correlation propagation
 - JPC-1559: refined command/query and repository boundaries to keep application responsibilities cohesive
+- JPC-1560: stronger Azure DevOps PR quality gates with analyzer enforcement and NuGet dependency auditing
 
 ## Local setup
 
@@ -409,14 +410,19 @@ See:
 
 The repo includes an Azure DevOps pipeline at `azure-pipelines.yml`.
 
+The pipeline is intended to be used as required build validation for PRs targeting `main` and `master`.
+
 The pipeline currently:
-- restores the .NET solution
+- restores the .NET solution with NuGet vulnerability auditing enabled
 - verifies formatting with `dotnet format --verify-no-changes`
-- builds the solution
+- builds the solution with analyzers and code-style warnings enforced as errors
 - runs .NET tests
 - runs Node gateway tests
 - publishes .NET test results
 - publishes Cobertura unit-test coverage artifacts
+
+See:
+- `docs/azure-devops-quality-gates.md`
 
 ## Deployment and cloud readiness
 
