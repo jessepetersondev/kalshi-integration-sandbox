@@ -221,6 +221,55 @@ For SQL Server / Azure SQL, set the provider + connection string first, then run
 Examples and connection-string guidance live in:
 - `docs/database-providers.md`
 
+## Environment configuration
+
+The repo now has an explicit **local / shared-dev / cloud** configuration story.
+
+Checked-in configuration assets:
+- `src/Kalshi.Integration.Api/appsettings.json` → baseline defaults
+- `src/Kalshi.Integration.Api/appsettings.Development.json` → safe local-development defaults
+- `src/Kalshi.Integration.Api/appsettings.Cloud.example.json` → cloud-oriented template only
+- `node-gateway/.env.example` → Node gateway local template only
+
+Configuration strategy:
+- keep defaults and examples in source control
+- keep secrets out of source control
+- use environment variables, ASP.NET Core user secrets, or a platform secret store for sensitive values
+- keep local override files untracked
+
+See:
+- `docs/environment-configuration.md`
+
+### Secret-handling expectations
+
+Do **not** commit:
+- real JWT signing keys
+- non-local SQL Server / Azure SQL connection strings
+- RabbitMQ passwords
+- real `.env` files
+- ad hoc local override files with secrets
+
+The `.gitignore` now excludes common local override paths such as:
+- `node-gateway/.env`
+- `src/Kalshi.Integration.Api/appsettings.Local.json`
+
+### Quick local configuration
+
+API example:
+
+```bash
+export ASPNETCORE_ENVIRONMENT=Development
+export Authentication__Jwt__SigningKey='replace-with-a-long-secret-value'
+export ConnectionStrings__KalshiIntegration='Data Source=kalshi-integration-sandbox.dev.db'
+```
+
+Node gateway example:
+
+```bash
+export PORT=3001
+export BACKEND_BASE_URL='http://localhost:5145'
+```
+
 ## Testing
 
 The sandbox now uses three dedicated test projects:

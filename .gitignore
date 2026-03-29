@@ -10,3 +10,12 @@ obj/
 TestResults/
 coverage/
 coverage.*
+
+# Local/untracked environment overrides
+.env
+.env.local
+.env.*.local
+node-gateway/.env
+node-gateway/.env.local
+src/Kalshi.Integration.Api/appsettings.Local.json
+src/Kalshi.Integration.Api/appsettings.*.local.json
