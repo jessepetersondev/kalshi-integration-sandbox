@@ -1,17 +1,29 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - kalshi_rabbitmq_data:/var/lib/rabbitmq
+
   api:
     build:
       context: .
       dockerfile: src/Kalshi.Integration.Api/Dockerfile
-    image: kalshi-integration-sandbox-api:local
+    image: kalshi-integration-event-publisher-api:local
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       Database__Provider: Sqlite
-      ConnectionStrings__KalshiIntegration: Data Source=/data/kalshi-integration-sandbox.db
+      ConnectionStrings__KalshiIntegration: Data Source=/data/kalshi-integration-event-publisher.db
       Database__ApplyMigrationsOnStartup: "true"
-      Authentication__Jwt__Issuer: kalshi-integration-sandbox
-      Authentication__Jwt__Audience: kalshi-integration-sandbox-clients
+      Authentication__Jwt__Issuer: kalshi-integration-event-publisher
+      Authentication__Jwt__Audience: kalshi-integration-event-publisher-clients
       Authentication__Jwt__SigningKey: change-this-local-container-signing-key-please
       Authentication__Jwt__EnableDevelopmentTokenIssuance: "false"
       Integrations__NodeGateway__Enabled: "true"
@@ -20,8 +32,20 @@ services:
       Integrations__NodeGateway__TimeoutSeconds: "5"
       Integrations__NodeGateway__RetryAttempts: "2"
       Integrations__NodeGateway__IncludeInReadiness: "true"
+      EventPublishing__Provider: RabbitMq
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: "5672"
+      RabbitMq__VirtualHost: /
+      RabbitMq__UserName: guest
+      RabbitMq__Password: guest
+      RabbitMq__Exchange: kalshi.integration.events
+      RabbitMq__ExchangeType: topic
+      RabbitMq__RoutingKeyPrefix: kalshi.integration
+      RabbitMq__ClientProvidedName: kalshi-integration-event-publisher
     volumes:
       - kalshi_api_data:/data
+    depends_on:
+      - rabbitmq
     ports:
       - "5000:8080"
 
@@ -29,7 +53,7 @@ services:
     build:
       context: .
       dockerfile: node-gateway/Dockerfile
-    image: kalshi-integration-sandbox-gateway:local
+    image: kalshi-integration-event-publisher-gateway:local
     environment:
       PORT: 3001
       BACKEND_BASE_URL: http://api:8080
@@ -40,3 +64,4 @@ services:
 
 volumes:
   kalshi_api_data:
+  kalshi_rabbitmq_data:

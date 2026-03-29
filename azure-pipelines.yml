@@ -18,7 +18,7 @@ variables:
   BuildConfiguration: Release
   DotNetVersion: 8.0.x
   NodeVersion: 22.x
-  Solution: $(Build.SourcesDirectory)/KalshiIntegrationSandbox.sln
+  Solution: $(Build.SourcesDirectory)/KalshiIntegrationEventPublisher.sln
   DotNetTestResultsDirectory: $(Agent.TempDirectory)/dotnet-test-results
   UnitCoverageSummaryFile: $(Build.SourcesDirectory)/tests/Kalshi.Integration.UnitTests/TestResults/Coverage/coverage.cobertura.xml
   UnitCoverageArtifactDirectory: $(Build.SourcesDirectory)/tests/Kalshi.Integration.UnitTests/TestResults/Coverage
@@ -73,7 +73,7 @@ stages:
               testResultsFormat: VSTest
               testResultsFiles: $(DotNetTestResultsDirectory)/**/*.trx
               failTaskOnFailedTests: true
-              testRunTitle: Kalshi Integration Sandbox .NET Tests
+              testRunTitle: Kalshi Integration Event Publisher .NET Tests
 
           - script: node --test
             displayName: Run Node gateway tests

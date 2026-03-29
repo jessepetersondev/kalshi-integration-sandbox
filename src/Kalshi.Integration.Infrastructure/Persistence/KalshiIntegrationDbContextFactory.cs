@@ -11,7 +11,7 @@ public sealed class KalshiIntegrationDbContextFactory : IDesignTimeDbContextFact
         var configuration = BuildConfiguration(args);
         var provider = DatabaseProviders.Normalize(configuration.GetValue<string>($"{DatabaseOptions.SectionName}:Provider"));
         var connectionString = configuration.GetConnectionString("KalshiIntegration")
-            ?? (provider == DatabaseProviders.Sqlite ? "Data Source=kalshi-integration-sandbox.db" : null);
+            ?? (provider == DatabaseProviders.Sqlite ? "Data Source=kalshi-integration-event-publisher.db" : null);
 
         DatabaseProviders.EnsureConnectionString(connectionString);
 

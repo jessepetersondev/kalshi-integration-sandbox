@@ -1,6 +1,6 @@
 # Observability
 
-The Kalshi Integration Sandbox now includes an **OpenTelemetry-based observability baseline** for traces and metrics.
+The Kalshi Integration Event Publisher now includes an **OpenTelemetry-based observability baseline** for traces and metrics.
 
 ## What is instrumented
 

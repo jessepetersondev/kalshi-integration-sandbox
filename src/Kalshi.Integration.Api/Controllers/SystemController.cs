@@ -25,7 +25,7 @@ public sealed class SystemController : ControllerBase
         return Ok(new
         {
             status = "ok",
-            service = "kalshi-integration-sandbox",
+            service = "kalshi-integration-event-publisher",
             utc = DateTimeOffset.UtcNow
         });
     }

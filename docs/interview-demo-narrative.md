@@ -1,6 +1,6 @@
 # Interview and demo narrative
 
-This guide makes the Kalshi Integration Sandbox easier to present in interviews, portfolio reviews, or architecture walkthroughs.
+This guide makes the Kalshi Integration Event Publisher easier to present in interviews, portfolio reviews, or architecture walkthroughs.
 
 ## Short positioning statement
 
@@ -15,7 +15,7 @@ It is intentionally built to show:
 
 ## How to describe the project in 30 seconds
 
-> Kalshi Integration Sandbox is a .NET 8 and Node.js portfolio project that models a realistic integration service. A client submits trade intents into an ASP.NET Core API, the app validates and persists them, creates and tracks orders, receives execution updates through a Node gateway that simulates an external integration layer, and exposes operational visibility through dashboard and health endpoints. I used it to demonstrate clean architecture, test coverage, reliability patterns, Azure-oriented deployment thinking, and production-style service boundaries.
+> Kalshi Integration Event Publisher is a .NET 8 and Node.js portfolio project that models a realistic integration service. A client submits trade intents into an ASP.NET Core API, the app validates and persists them, creates and tracks orders, receives execution updates through a Node gateway that simulates an external integration layer, and exposes operational visibility through dashboard and health endpoints. I used it to demonstrate clean architecture, test coverage, reliability patterns, Azure-oriented deployment thinking, and production-style service boundaries.
 
 ## How it connects to customer integrations work
 

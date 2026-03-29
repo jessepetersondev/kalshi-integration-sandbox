@@ -54,7 +54,7 @@ Recommended shape:
 Typical local values:
 
 - `Database__Provider=Sqlite`
-- `ConnectionStrings__KalshiIntegration=Data Source=kalshi-integration-sandbox.dev.db`
+- `ConnectionStrings__KalshiIntegration=Data Source=kalshi-integration-event-publisher.dev.db`
 - `Authentication__Jwt__EnableDevelopmentTokenIssuance=true`
 - `Integrations__NodeGateway__BaseUrl=http://localhost:3001`
 
@@ -78,7 +78,7 @@ From `src/Kalshi.Integration.Api`:
 dotnet user-secrets init
 
 dotnet user-secrets set "Authentication:Jwt:SigningKey" "replace-with-a-long-local-secret"
-dotnet user-secrets set "ConnectionStrings:KalshiIntegration" "Data Source=kalshi-integration-sandbox.dev.db"
+dotnet user-secrets set "ConnectionStrings:KalshiIntegration" "Data Source=kalshi-integration-event-publisher.dev.db"
 ```
 
 ## Shared dev / sandbox environment
@@ -161,7 +161,7 @@ Checked-in files should contain only:
 ```bash
 export ASPNETCORE_ENVIRONMENT=Development
 export Database__Provider=Sqlite
-export ConnectionStrings__KalshiIntegration='Data Source=kalshi-integration-sandbox.dev.db'
+export ConnectionStrings__KalshiIntegration='Data Source=kalshi-integration-event-publisher.dev.db'
 export Authentication__Jwt__SigningKey='replace-with-a-long-secret-value'
 export Authentication__Jwt__EnableDevelopmentTokenIssuance=true
 export Integrations__NodeGateway__BaseUrl='http://localhost:3001'

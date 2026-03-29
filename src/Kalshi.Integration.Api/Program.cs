@@ -185,7 +185,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Kalshi Integration Sandbox API",
+        Title = "Kalshi Integration Event Publisher API",
         Version = "v1",
     });
 
@@ -254,7 +254,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 
 app.MapGet("/", () => Results.Ok(new
 {
-    application = "Kalshi Integration Sandbox",
+    application = "Kalshi Integration Event Publisher",
     environment = app.Environment.EnvironmentName,
     version = "v1"
 }))

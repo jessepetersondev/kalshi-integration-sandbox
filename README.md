@@ -1,4 +1,4 @@
-# Kalshi Integration Sandbox
+# Kalshi Integration Event Publisher
 
 A portfolio-grade integration sandbox that models how a production-minded trading workflow can move from API intake through validation, persistence, outbound integration, execution updates, and operator visibility.
 
@@ -11,7 +11,7 @@ The project intentionally mixes:
 
 ## Repository
 
-- GitHub: https://github.com/jessepetersondev/kalshi-integration-sandbox
+- GitHub: https://github.com/jessepetersondev/kalshi-integration-event-publisher
 - Default branch: `master`
 - Visibility: public
 
@@ -391,9 +391,9 @@ The repo uses three dedicated test projects:
 Local verification commands:
 
 ```bash
-dotnet format KalshiIntegrationSandbox.sln --verify-no-changes
-dotnet build KalshiIntegrationSandbox.sln
-dotnet test KalshiIntegrationSandbox.sln
+dotnet format KalshiIntegrationEventPublisher.sln --verify-no-changes
+dotnet build KalshiIntegrationEventPublisher.sln
+dotnet test KalshiIntegrationEventPublisher.sln
 ```
 
 Node gateway tests:

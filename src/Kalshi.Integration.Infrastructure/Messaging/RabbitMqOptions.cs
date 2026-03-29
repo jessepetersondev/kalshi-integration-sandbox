@@ -33,5 +33,5 @@ public sealed class RabbitMqOptions
     public bool Mandatory { get; set; }
 
     [Required]
-    public string ClientProvidedName { get; set; } = "kalshi-integration-sandbox";
+    public string ClientProvidedName { get; set; } = "kalshi-integration-event-publisher";
 }

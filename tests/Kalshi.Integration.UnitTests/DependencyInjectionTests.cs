@@ -112,7 +112,7 @@ public sealed class DependencyInjectionTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["ConnectionStrings:KalshiIntegration"] = "Server=tcp:kalshi-sql.database.windows.net,1433;Initial Catalog=KalshiIntegrationSandbox;User ID=kalshi;Password=StrongPassword!123;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                ["ConnectionStrings:KalshiIntegration"] = "Server=tcp:kalshi-sql.database.windows.net,1433;Initial Catalog=KalshiIntegrationEventPublisher;User ID=kalshi;Password=StrongPassword!123;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
                 ["Database:Provider"] = "AzureSql",
                 ["Database:ApplyMigrationsOnStartup"] = "false",
             })

@@ -1,6 +1,6 @@
 # Azure deployment guide
 
-This guide documents a credible Azure deployment path for the Kalshi Integration Sandbox.
+This guide documents a credible Azure deployment path for the Kalshi Integration Event Publisher.
 
 ## Recommended Azure target
 
@@ -74,7 +74,7 @@ Example resource names:
 - Log Analytics workspace: `law-kalshi-sandbox`
 - Key Vault: `kv-kalshi-sandbox`
 - SQL server: `sql-kalshi-sandbox`
-- SQL database: `kalshi-integration-sandbox`
+- SQL database: `kalshi-integration-event-publisher`
 
 ### 1) Create the resource group
 
@@ -131,7 +131,7 @@ az sql server create \
 az sql db create \
   --resource-group rg-kalshi-sandbox \
   --server sql-kalshi-sandbox \
-  --name kalshi-integration-sandbox \
+  --name kalshi-integration-event-publisher \
   --service-objective Basic
 ```
 
@@ -205,9 +205,9 @@ az containerapp create \
     ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_URLS=http://+:8080 \
     Database__Provider=AzureSql \
-    ConnectionStrings__KalshiIntegration='Server=tcp:sql-kalshi-sandbox.database.windows.net,1433;Initial Catalog=kalshi-integration-sandbox;Persist Security Info=False;User ID=kalshiadmin;Password=<from-secret-store>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;' \
-    Authentication__Jwt__Issuer='kalshi-integration-sandbox' \
-    Authentication__Jwt__Audience='kalshi-integration-sandbox-clients' \
+    ConnectionStrings__KalshiIntegration='Server=tcp:sql-kalshi-sandbox.database.windows.net,1433;Initial Catalog=kalshi-integration-event-publisher;Persist Security Info=False;User ID=kalshiadmin;Password=<from-secret-store>;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;' \
+    Authentication__Jwt__Issuer='kalshi-integration-event-publisher' \
+    Authentication__Jwt__Audience='kalshi-integration-event-publisher-clients' \
     Authentication__Jwt__EnableDevelopmentTokenIssuance=false \
     OpenApi__EnableSwaggerInNonDevelopment=false
 ```

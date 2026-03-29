@@ -36,7 +36,7 @@ SQLite remains the fastest way to demo the app locally, while SQL Server / Azure
 ```json
 {
   "ConnectionStrings": {
-    "KalshiIntegration": "Data Source=kalshi-integration-sandbox.db"
+    "KalshiIntegration": "Data Source=kalshi-integration-event-publisher.db"
   },
   "Database": {
     "Provider": "Sqlite",
@@ -58,7 +58,7 @@ Set environment variables before running the API:
 
 ```bash
 export Database__Provider=SqlServer
-export ConnectionStrings__KalshiIntegration='Server=localhost,14333;Initial Catalog=KalshiIntegrationSandbox;User ID=sa;Password=Your_strong_password123;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;'
+export ConnectionStrings__KalshiIntegration='Server=localhost,14333;Initial Catalog=KalshiIntegrationEventPublisher;User ID=sa;Password=Your_strong_password123;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;'
 
 cd src/Kalshi.Integration.Api
 dotnet run
@@ -80,7 +80,7 @@ Azure SQL uses the same provider (`SqlServer`) with an Azure-compatible connecti
 
 ```bash
 export Database__Provider=SqlServer
-export ConnectionStrings__KalshiIntegration='Server=tcp:your-server.database.windows.net,1433;Initial Catalog=KalshiIntegrationSandbox;User ID=your-user;Password=your-password;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
+export ConnectionStrings__KalshiIntegration='Server=tcp:your-server.database.windows.net,1433;Initial Catalog=KalshiIntegrationEventPublisher;User ID=your-user;Password=your-password;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 ```
 
 Then run the API or EF tooling as usual.
@@ -109,7 +109,7 @@ dotnet ef database update \
 
 ```bash
 Database__Provider=SqlServer \
-ConnectionStrings__KalshiIntegration='Server=localhost,14333;Initial Catalog=KalshiIntegrationSandbox;User ID=sa;Password=Your_strong_password123;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;' \
+ConnectionStrings__KalshiIntegration='Server=localhost,14333;Initial Catalog=KalshiIntegrationEventPublisher;User ID=sa;Password=Your_strong_password123;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;' \
   dotnet ef database update \
   --project src/Kalshi.Integration.Infrastructure \
   --startup-project src/Kalshi.Integration.Api

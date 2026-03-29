@@ -29,7 +29,7 @@ The sandbox now uses three dedicated test projects:
 Run the full suite:
 
 ```bash
-dotnet test KalshiIntegrationSandbox.sln
+dotnet test KalshiIntegrationEventPublisher.sln
 ```
 
 Run a single layer:
@@ -43,7 +43,7 @@ dotnet test tests/Kalshi.Integration.AcceptanceTests/Kalshi.Integration.Acceptan
 Before running the broader build, verify repo formatting with:
 
 ```bash
-dotnet format KalshiIntegrationSandbox.sln --verify-no-changes
+dotnet format KalshiIntegrationEventPublisher.sln --verify-no-changes
 ```
 
 ### Unit coverage gate

@@ -2,7 +2,7 @@
   "name": "kalshi-integration-node-gateway",
   "version": "0.1.0",
   "private": true,
-  "description": "Lightweight Node.js integration gateway and webhook simulator for the Kalshi Integration Sandbox.",
+  "description": "Lightweight Node.js integration gateway and webhook simulator for the Kalshi Integration Event Publisher.",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

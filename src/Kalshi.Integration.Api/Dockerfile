@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY Directory.Build.props Directory.Build.targets Directory.Packages.props KalshiIntegrationSandbox.sln ./
+COPY Directory.Build.props Directory.Build.targets Directory.Packages.props KalshiIntegrationEventPublisher.sln ./
 COPY src/Kalshi.Integration.Api/Kalshi.Integration.Api.csproj src/Kalshi.Integration.Api/
 COPY src/Kalshi.Integration.Application/Kalshi.Integration.Application.csproj src/Kalshi.Integration.Application/
 COPY src/Kalshi.Integration.Contracts/Kalshi.Integration.Contracts.csproj src/Kalshi.Integration.Contracts/

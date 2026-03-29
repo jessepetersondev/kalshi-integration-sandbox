@@ -15,11 +15,11 @@ namespace Kalshi.Integration.IntegrationTests;
 
 public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private const string JwtIssuer = "kalshi-integration-sandbox";
-    private const string JwtAudience = "kalshi-integration-sandbox-clients";
-    private const string JwtSigningKey = "kalshi-integration-sandbox-local-dev-signing-key-please-change";
+    private const string JwtIssuer = "kalshi-integration-event-publisher";
+    private const string JwtAudience = "kalshi-integration-event-publisher-clients";
+    private const string JwtSigningKey = "kalshi-integration-event-publisher-local-dev-signing-key-please-change";
 
-    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), "kalshi-integration-sandbox", "integration", $"{Guid.NewGuid():N}.db");
+    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), "kalshi-integration-event-publisher", "integration", $"{Guid.NewGuid():N}.db");
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

@@ -1,6 +1,6 @@
 # Node Gateway
 
-Lightweight Node.js integration gateway and webhook simulator for the Kalshi Integration Sandbox.
+Lightweight Node.js integration gateway and webhook simulator for the Kalshi Integration Event Publisher.
 
 ## Structure
 
