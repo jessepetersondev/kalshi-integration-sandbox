@@ -212,7 +212,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
-var applyMigrationsOnStartup = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<DatabaseOptions>>().Value.ApplyMigrationsOnStartup;
+var databaseOptions = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<DatabaseOptions>>().Value;
+var applyMigrationsOnStartup = databaseOptions.ApplyMigrationsOnStartup && !app.Environment.IsEnvironment("Testing");
 
 if (applyMigrationsOnStartup)
 {

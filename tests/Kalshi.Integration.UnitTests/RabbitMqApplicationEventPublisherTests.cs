@@ -44,8 +44,13 @@ public sealed class RabbitMqApplicationEventPublisherTests
             .Setup(x => x.CreateBasicProperties())
             .Returns(properties.Object);
         model
-            .Setup(x => x.BasicPublish("kalshi.events", It.IsAny<string>(), false, properties.Object, It.IsAny<ReadOnlyMemory<byte>>()))
-            .Callback<string, string, bool, IBasicProperties, ReadOnlyMemory<byte>>((_, key, _, _, body) =>
+            .Setup(x => x.BasicPublish(
+                "kalshi.events",
+                It.IsAny<string>(),
+                false,
+                properties.Object,
+                It.IsAny<ReadOnlyMemory<byte>>()))
+            .Callback((string _, string key, bool _, IBasicProperties _, ReadOnlyMemory<byte> body) =>
             {
                 routingKey = key;
                 publishedBody = body.ToArray();

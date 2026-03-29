@@ -31,6 +31,7 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
                 ["ConnectionStrings:KalshiIntegration"] = $"Data Source={_databasePath}",
                 ["Database:Provider"] = "Sqlite",
                 ["Database:ApplyMigrationsOnStartup"] = "false",
+                ["Database__ApplyMigrationsOnStartup"] = "false",
                 ["Authentication:Jwt:Issuer"] = JwtIssuer,
                 ["Authentication:Jwt:Audience"] = JwtAudience,
                 ["Authentication:Jwt:SigningKey"] = JwtSigningKey,
@@ -43,13 +44,14 @@ public sealed class IntegrationTestWebApplicationFactory : WebApplicationFactory
     protected override IHost CreateHost(IHostBuilder builder)
     {
         EnsureDatabaseDirectory();
+        TryDeleteDatabase();
 
         var host = base.CreateHost(builder);
 
         using var scope = host.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KalshiIntegrationDbContext>();
         dbContext.Database.EnsureDeleted();
-        dbContext.Database.Migrate();
+        dbContext.Database.EnsureCreated();
 
         return host;
     }
