@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Kalshi.Integration.Contracts.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -31,8 +32,15 @@ public sealed partial class NodeGatewayClient : INodeGatewayClient
                 ? values.FirstOrDefault() ?? string.Empty
                 : string.Empty;
             stopwatch.Stop();
+            var elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
 
-            OutboundDependencyCallSucceeded(_logger, "node-gateway", path, (int)response.StatusCode, stopwatch.Elapsed.TotalMilliseconds, null);
+            KalshiTelemetry.OutboundDependencyDurationMs.Record(
+                elapsedMs,
+                new KeyValuePair<string, object?>("server.address", _httpClient.BaseAddress?.Host ?? "node-gateway"),
+                new KeyValuePair<string, object?>("url.path", path),
+                new KeyValuePair<string, object?>("http.response.status_code", (int)response.StatusCode));
+
+            OutboundDependencyCallSucceeded(_logger, "node-gateway", path, (int)response.StatusCode, elapsedMs, null);
 
             return new NodeGatewayProbeResult(
                 response.IsSuccessStatusCode,
@@ -46,7 +54,15 @@ public sealed partial class NodeGatewayClient : INodeGatewayClient
         catch (Exception exception)
         {
             stopwatch.Stop();
-            OutboundDependencyCallFailed(_logger, "node-gateway", path, stopwatch.Elapsed.TotalMilliseconds, exception);
+            var elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
+
+            KalshiTelemetry.OutboundDependencyDurationMs.Record(
+                elapsedMs,
+                new KeyValuePair<string, object?>("server.address", _httpClient.BaseAddress?.Host ?? "node-gateway"),
+                new KeyValuePair<string, object?>("url.path", path),
+                new KeyValuePair<string, object?>("error.type", exception.GetType().Name));
+
+            OutboundDependencyCallFailed(_logger, "node-gateway", path, elapsedMs, exception);
             throw;
         }
     }

@@ -165,6 +165,7 @@ export ConnectionStrings__KalshiIntegration='Data Source=kalshi-integration-sand
 export Authentication__Jwt__SigningKey='replace-with-a-long-secret-value'
 export Authentication__Jwt__EnableDevelopmentTokenIssuance=true
 export Integrations__NodeGateway__BaseUrl='http://localhost:3001'
+export OpenTelemetry__OtlpEndpoint='http://localhost:4317'
 ```
 
 ### Node gateway

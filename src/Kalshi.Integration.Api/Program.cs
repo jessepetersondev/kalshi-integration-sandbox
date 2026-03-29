@@ -3,6 +3,7 @@ using Asp.Versioning;
 using Kalshi.Integration.Api.Configuration;
 using Kalshi.Integration.Api.Infrastructure;
 using Kalshi.Integration.Application;
+using Kalshi.Integration.Contracts.Diagnostics;
 using Kalshi.Integration.Infrastructure;
 using Kalshi.Integration.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,6 +12,9 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,9 +48,15 @@ builder.Services.AddOptions<JwtOptions>()
     .ValidateOnStart();
 
 var configuredOpenApiOptions = builder.Configuration.GetSection(OpenApiOptions.SectionName).Get<OpenApiOptions>() ?? new OpenApiOptions();
+var configuredOpenTelemetryOptions = builder.Configuration.GetSection(OpenTelemetryOptions.SectionName).Get<OpenTelemetryOptions>() ?? new OpenTelemetryOptions();
 
 builder.Services.AddOptions<OpenApiOptions>()
     .Bind(builder.Configuration.GetSection(OpenApiOptions.SectionName))
+    .ValidateOnStart();
+
+builder.Services.AddOptions<OpenTelemetryOptions>()
+    .Bind(builder.Configuration.GetSection(OpenTelemetryOptions.SectionName))
+    .Validate(options => string.IsNullOrWhiteSpace(options.OtlpEndpoint) || Uri.TryCreate(options.OtlpEndpoint, UriKind.Absolute, out _), $"{OpenTelemetryOptions.SectionName}:OtlpEndpoint must be an absolute URI when configured.")
     .ValidateOnStart();
 
 var swaggerEnabled = builder.Environment.IsDevelopment() || configuredOpenApiOptions.EnableSwaggerInNonDevelopment;
@@ -83,6 +93,78 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("integration.write", policy =>
         policy.RequireAuthenticatedUser().RequireRole("admin", "integration"));
 });
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(
+            configuredOpenTelemetryOptions.ServiceName,
+            serviceVersion: string.IsNullOrWhiteSpace(configuredOpenTelemetryOptions.ServiceVersion) ? "v1" : configuredOpenTelemetryOptions.ServiceVersion)
+        .AddAttributes(new Dictionary<string, object>
+        {
+            ["deployment.environment"] = builder.Environment.EnvironmentName,
+        }))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddSource(KalshiTelemetry.ActivitySourceName)
+            .AddAspNetCoreInstrumentation(options =>
+            {
+                options.RecordException = true;
+                options.Filter = httpContext => !httpContext.Request.Path.StartsWithSegments("/health/live");
+                options.EnrichWithHttpRequest = (activity, request) =>
+                {
+                    if (request.Headers.TryGetValue(RequestMetadata.CorrelationIdHeaderName, out var correlationId))
+                    {
+                        activity.SetTag("kalshi.correlation_id", correlationId.ToString());
+                    }
+                };
+                options.EnrichWithHttpResponse = (activity, response) =>
+                {
+                    activity.SetTag("kalshi.environment", builder.Environment.EnvironmentName);
+                };
+            })
+            .AddHttpClientInstrumentation(options =>
+            {
+                options.RecordException = true;
+                options.EnrichWithHttpRequestMessage = (activity, request) =>
+                {
+                    if (request.Headers.TryGetValues(RequestMetadata.CorrelationIdHeaderName, out var correlationValues))
+                    {
+                        activity.SetTag("kalshi.correlation_id", correlationValues.FirstOrDefault());
+                    }
+                };
+            })
+            .AddEntityFrameworkCoreInstrumentation(options =>
+            {
+                options.SetDbStatementForText = true;
+                options.SetDbStatementForStoredProcedure = true;
+            });
+
+        if (!string.IsNullOrWhiteSpace(configuredOpenTelemetryOptions.OtlpEndpoint))
+        {
+            tracing.AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(configuredOpenTelemetryOptions.OtlpEndpoint, UriKind.Absolute);
+            });
+        }
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddMeter(KalshiTelemetry.MeterName)
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation();
+
+        if (!string.IsNullOrWhiteSpace(configuredOpenTelemetryOptions.OtlpEndpoint))
+        {
+            metrics.AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(configuredOpenTelemetryOptions.OtlpEndpoint, UriKind.Absolute);
+            });
+        }
+    });
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

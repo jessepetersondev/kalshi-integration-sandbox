@@ -66,6 +66,56 @@ public sealed class NodeGatewayClientTests
         Assert.Equal("gateway down", result.ResponseBody);
     }
 
+    [Fact]
+    public async Task CorrelationPropagationHandler_ShouldFallBackToCurrentActivityTraceId()
+    {
+        var httpContextAccessor = new HttpContextAccessor();
+        var innerHandler = new CapturingHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"status\":\"ok\"}")
+        });
+
+        var handler = new CorrelationPropagationHandler(httpContextAccessor)
+        {
+            InnerHandler = innerHandler,
+        };
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://localhost:3001"),
+        };
+
+        using var activity = new System.Diagnostics.Activity("test-request");
+        activity.Start();
+
+        var client = new NodeGatewayClient(
+            httpClient,
+            Options.Create(new NodeGatewayOptions { BaseUrl = "http://localhost:3001", HealthPath = "/health", TimeoutSeconds = 5, RetryAttempts = 0 }),
+            NullLogger<NodeGatewayClient>.Instance);
+
+        await client.ProbeHealthAsync();
+
+        Assert.Equal(activity.TraceId.ToString(), innerHandler.LastRequest!.Headers.GetValues("x-correlation-id").Single());
+    }
+
+    [Fact]
+    public async Task NodeGatewayClient_ShouldThrowWhenDependencyCallFails()
+    {
+        var innerHandler = new ThrowingHandler(new HttpRequestException("node gateway unavailable"));
+
+        using var httpClient = new HttpClient(innerHandler)
+        {
+            BaseAddress = new Uri("http://localhost:3001"),
+        };
+
+        var client = new NodeGatewayClient(
+            httpClient,
+            Options.Create(new NodeGatewayOptions { BaseUrl = "http://localhost:3001", HealthPath = "/health", TimeoutSeconds = 5, RetryAttempts = 0 }),
+            NullLogger<NodeGatewayClient>.Instance);
+
+        await Assert.ThrowsAsync<HttpRequestException>(() => client.ProbeHealthAsync());
+    }
+
     private sealed class CapturingHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _responseFactory;
@@ -81,6 +131,21 @@ public sealed class NodeGatewayClientTests
         {
             LastRequest = request;
             return Task.FromResult(_responseFactory(request));
+        }
+    }
+
+    private sealed class ThrowingHandler : HttpMessageHandler
+    {
+        private readonly Exception _exception;
+
+        public ThrowingHandler(Exception exception)
+        {
+            _exception = exception;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            throw _exception;
         }
     }
 }

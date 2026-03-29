@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Kalshi.Integration.Contracts.Diagnostics;
 
 namespace Kalshi.Integration.Api.Infrastructure;
 
@@ -26,12 +27,21 @@ public sealed class RequestTimingMiddleware
             await _next(httpContext);
             stopwatch.Stop();
 
+            var path = request.Path.Value ?? "/";
+            var elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
+
+            KalshiTelemetry.HttpServerRequestDurationMs.Record(
+                elapsedMs,
+                new KeyValuePair<string, object?>("http.request.method", request.Method),
+                new KeyValuePair<string, object?>("http.route", path),
+                new KeyValuePair<string, object?>("http.response.status_code", httpContext.Response.StatusCode));
+
             _logger.LogInformation(
                 "Request completed {Method} {Path} with statusCode={StatusCode} in {ElapsedMs} ms. correlationId={CorrelationId} traceId={TraceIdentifier}",
                 request.Method,
-                request.Path.Value ?? "/",
+                path,
                 httpContext.Response.StatusCode,
-                stopwatch.Elapsed.TotalMilliseconds,
+                elapsedMs,
                 correlationId,
                 httpContext.TraceIdentifier);
         }
@@ -39,12 +49,21 @@ public sealed class RequestTimingMiddleware
         {
             stopwatch.Stop();
 
+            var path = request.Path.Value ?? "/";
+            var elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
+
+            KalshiTelemetry.HttpServerRequestDurationMs.Record(
+                elapsedMs,
+                new KeyValuePair<string, object?>("http.request.method", request.Method),
+                new KeyValuePair<string, object?>("http.route", path),
+                new KeyValuePair<string, object?>("error.type", exception.GetType().Name));
+
             _logger.LogError(
                 exception,
                 "Request failed {Method} {Path} after {ElapsedMs} ms. correlationId={CorrelationId} traceId={TraceIdentifier}",
                 request.Method,
-                request.Path.Value ?? "/",
-                stopwatch.Elapsed.TotalMilliseconds,
+                path,
+                elapsedMs,
                 correlationId,
                 httpContext.TraceIdentifier);
 

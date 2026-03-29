@@ -345,11 +345,16 @@ Current observability includes:
 - database/dependency call logging
 - correlation-id and trace-id flow
 - provider-aware dependency naming in logs
+- OpenTelemetry traces for inbound requests, outbound `HttpClient`, and EF Core database work
+- OpenTelemetry metrics for ASP.NET Core, runtime/process activity, and custom request/dependency duration histograms
+
+OpenTelemetry is configurable through the `OpenTelemetry` config section, including an OTLP export endpoint for collector/vendor integration.
 
 See also:
 - `docs/environment-configuration.md`
 - `docs/deployment-artifacts.md`
 - `docs/azure-deployment-guide.md`
+- `docs/observability.md`
 
 ## Event publishing
 
