@@ -17,10 +17,12 @@ csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = false:suggestion
 csharp_style_var_elsewhere = false:suggestion
 dotnet_diagnostic.CA1848.severity = suggestion
+dotnet_diagnostic.CS1591.severity = warning
 
 [src/Kalshi.Integration.Infrastructure/Persistence/Migrations/*.cs]
 generated_code = true
 dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.CS1591.severity = none
 
 [*.{csproj,props,targets}]
 indent_size = 2

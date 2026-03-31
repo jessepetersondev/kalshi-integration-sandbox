@@ -1,4 +1,5 @@
 using System.Text;
+using System.Reflection;
 using Asp.Versioning;
 using Kalshi.Integration.Api.Configuration;
 using Kalshi.Integration.Api.Infrastructure;
@@ -211,6 +212,22 @@ builder.Services.AddSwaggerGen(options =>
     {
         [securityScheme] = Array.Empty<string>(),
     });
+
+    var xmlDocumentationFiles = new[]
+    {
+        Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"),
+        Path.Combine(AppContext.BaseDirectory, $"{typeof(Kalshi.Integration.Application.DependencyInjection).Assembly.GetName().Name}.xml"),
+        Path.Combine(AppContext.BaseDirectory, $"{typeof(KalshiTelemetry).Assembly.GetName().Name}.xml"),
+        Path.Combine(AppContext.BaseDirectory, $"{typeof(Kalshi.Integration.Infrastructure.DependencyInjection).Assembly.GetName().Name}.xml"),
+    };
+
+    foreach (var xmlDocumentationFile in xmlDocumentationFiles.Distinct(StringComparer.OrdinalIgnoreCase))
+    {
+        if (File.Exists(xmlDocumentationFile))
+        {
+            options.IncludeXmlComments(xmlDocumentationFile, includeControllerXmlComments: true);
+        }
+    }
 });
 
 var app = builder.Build();

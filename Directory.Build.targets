@@ -1,4 +1,17 @@
 <Project>
+  <Target Name="CopyReferenceXmlDocumentationFiles"
+          AfterTargets="CopyFilesToOutputDirectory"
+          Condition="'$(MSBuildProjectName)' == 'Kalshi.Integration.Api'">
+    <ItemGroup>
+      <ReferenceXmlDocumentationFiles Include="@(ReferenceCopyLocalPaths->'%(RootDir)%(Directory)%(Filename).xml')"
+                                      Condition="Exists('%(RootDir)%(Directory)%(Filename).xml')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ReferenceXmlDocumentationFiles)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <NoWarn>$(NoWarn);CA1707;CA1861</NoWarn>
   </PropertyGroup>
