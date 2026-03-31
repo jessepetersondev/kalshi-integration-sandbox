@@ -2,6 +2,10 @@ using System.Diagnostics;
 using Kalshi.Integration.Contracts.Diagnostics;
 
 namespace Kalshi.Integration.Api.Infrastructure;
+/// <summary>
+/// Applies request timing concerns to the ASP.NET Core request pipeline.
+/// </summary>
+
 
 public sealed class RequestTimingMiddleware
 {

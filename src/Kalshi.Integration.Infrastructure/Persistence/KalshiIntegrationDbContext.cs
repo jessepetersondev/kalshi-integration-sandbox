@@ -2,6 +2,10 @@ using Kalshi.Integration.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kalshi.Integration.Infrastructure.Persistence;
+/// <summary>
+/// Represents kalshi integration db context.
+/// </summary>
+
 
 public sealed class KalshiIntegrationDbContext : DbContext
 {

@@ -2,6 +2,10 @@ using Kalshi.Integration.Domain.Common;
 using Kalshi.Integration.Domain.Orders;
 
 namespace Kalshi.Integration.Domain.Executions;
+/// <summary>
+/// Represents the domain model for execution event.
+/// </summary>
+
 
 public sealed class ExecutionEvent
 {

@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Primitives;
 
 namespace Kalshi.Integration.Api.Infrastructure;
-
+/// <summary>
+/// Provides helpers for reading, normalizing, and echoing correlation and idempotency
+/// headers on API requests and responses.
+/// </summary>
 public static class RequestMetadata
 {
     public const string CorrelationIdHeaderName = "x-correlation-id";

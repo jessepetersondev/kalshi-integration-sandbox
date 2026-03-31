@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Kalshi.Integration.Api.Infrastructure;
+/// <summary>
+/// Represents health check response writer.
+/// </summary>
+
 
 public static class HealthCheckResponseWriter
 {

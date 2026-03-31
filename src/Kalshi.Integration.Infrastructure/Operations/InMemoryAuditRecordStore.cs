@@ -3,6 +3,10 @@ using Kalshi.Integration.Application.Abstractions;
 using Kalshi.Integration.Application.Operations;
 
 namespace Kalshi.Integration.Infrastructure.Operations;
+/// <summary>
+/// Provides storage operations for in memory audit record.
+/// </summary>
+
 
 public sealed class InMemoryAuditRecordStore : IAuditRecordStore
 {

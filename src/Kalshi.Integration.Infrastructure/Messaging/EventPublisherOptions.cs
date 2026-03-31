@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Kalshi.Integration.Infrastructure.Messaging;
+/// <summary>
+/// Represents configuration for event publisher.
+/// </summary>
+
 
 public sealed class EventPublisherOptions
 {
@@ -9,6 +13,10 @@ public sealed class EventPublisherOptions
     [Required]
     public string Provider { get; set; } = EventPublisherProviders.InMemory;
 }
+/// <summary>
+/// Defines supported event publisher values.
+/// </summary>
+
 
 public static class EventPublisherProviders
 {

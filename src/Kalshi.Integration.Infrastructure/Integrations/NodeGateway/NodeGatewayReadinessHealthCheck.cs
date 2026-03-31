@@ -1,6 +1,10 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Kalshi.Integration.Infrastructure.Integrations.NodeGateway;
+/// <summary>
+/// Reports health for node gateway readiness.
+/// </summary>
+
 
 public sealed class NodeGatewayReadinessHealthCheck : IHealthCheck
 {

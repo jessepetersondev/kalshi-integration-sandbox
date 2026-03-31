@@ -1,4 +1,8 @@
 namespace Kalshi.Integration.Contracts.TradeIntents;
+/// <summary>
+/// Represents a response payload for risk decision.
+/// </summary>
+
 
 public sealed record RiskDecisionResponse(
     bool Accepted,

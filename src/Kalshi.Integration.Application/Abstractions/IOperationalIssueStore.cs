@@ -1,6 +1,10 @@
 using Kalshi.Integration.Application.Operations;
 
 namespace Kalshi.Integration.Application.Abstractions;
+/// <summary>
+/// Provides storage operations for i operational issue.
+/// </summary>
+
 
 public interface IOperationalIssueStore
 {

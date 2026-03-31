@@ -1,6 +1,10 @@
 using Kalshi.Integration.Application.Operations;
 
 namespace Kalshi.Integration.Application.Abstractions;
+/// <summary>
+/// Provides storage operations for i idempotency.
+/// </summary>
+
 
 public interface IIdempotencyStore
 {

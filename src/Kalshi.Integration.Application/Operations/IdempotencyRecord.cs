@@ -1,4 +1,8 @@
 namespace Kalshi.Integration.Application.Operations;
+/// <summary>
+/// Represents a recorded idempotency entry.
+/// </summary>
+
 
 public sealed record IdempotencyRecord(
     Guid Id,

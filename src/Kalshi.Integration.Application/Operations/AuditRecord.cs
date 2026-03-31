@@ -1,4 +1,8 @@
 namespace Kalshi.Integration.Application.Operations;
+/// <summary>
+/// Represents a recorded audit entry.
+/// </summary>
+
 
 public sealed record AuditRecord(
     Guid Id,

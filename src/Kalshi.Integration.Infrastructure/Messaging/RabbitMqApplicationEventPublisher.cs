@@ -7,6 +7,10 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 namespace Kalshi.Integration.Infrastructure.Messaging;
+/// <summary>
+/// Publishes rabbit mq application event.
+/// </summary>
+
 
 public sealed class RabbitMqApplicationEventPublisher : IApplicationEventPublisher
 {

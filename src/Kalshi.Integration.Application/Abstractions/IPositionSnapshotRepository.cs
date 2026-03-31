@@ -1,6 +1,10 @@
 using Kalshi.Integration.Domain.Positions;
 
 namespace Kalshi.Integration.Application.Abstractions;
+/// <summary>
+/// Provides persistence operations for i position snapshot.
+/// </summary>
+
 
 public interface IPositionSnapshotRepository
 {

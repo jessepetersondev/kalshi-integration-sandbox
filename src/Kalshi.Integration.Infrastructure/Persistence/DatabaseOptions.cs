@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Kalshi.Integration.Infrastructure.Persistence;
+/// <summary>
+/// Represents configuration for database.
+/// </summary>
+
 
 public sealed class DatabaseOptions
 {
@@ -11,6 +15,10 @@ public sealed class DatabaseOptions
 
     public bool ApplyMigrationsOnStartup { get; set; } = true;
 }
+/// <summary>
+/// Defines supported database values.
+/// </summary>
+
 
 public static class DatabaseProviders
 {

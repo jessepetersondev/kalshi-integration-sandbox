@@ -1,4 +1,8 @@
 namespace Kalshi.Integration.Application.Events;
+/// <summary>
+/// Represents application event envelope.
+/// </summary>
+
 
 public sealed record ApplicationEventEnvelope(
     Guid Id,

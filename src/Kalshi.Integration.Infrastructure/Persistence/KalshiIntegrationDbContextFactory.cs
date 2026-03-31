@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
 namespace Kalshi.Integration.Infrastructure.Persistence;
+/// <summary>
+/// Creates kalshi integration db context instances.
+/// </summary>
+
 
 public sealed class KalshiIntegrationDbContextFactory : IDesignTimeDbContextFactory<KalshiIntegrationDbContext>
 {

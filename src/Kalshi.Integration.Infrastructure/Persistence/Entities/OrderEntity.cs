@@ -1,4 +1,8 @@
 namespace Kalshi.Integration.Infrastructure.Persistence.Entities;
+/// <summary>
+/// Represents the persistence model for order.
+/// </summary>
+
 
 public sealed class OrderEntity
 {

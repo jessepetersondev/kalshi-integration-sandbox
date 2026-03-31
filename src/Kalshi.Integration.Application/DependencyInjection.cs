@@ -6,6 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kalshi.Integration.Application;
+/// <summary>
+/// Registers application-layer services and options with the dependency injection container.
+/// </summary>
+
 
 public static class DependencyInjection
 {

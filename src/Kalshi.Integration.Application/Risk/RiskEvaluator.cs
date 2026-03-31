@@ -3,6 +3,10 @@ using Kalshi.Integration.Contracts.TradeIntents;
 using Microsoft.Extensions.Options;
 
 namespace Kalshi.Integration.Application.Risk;
+/// <summary>
+/// Represents risk evaluator.
+/// </summary>
+
 
 public sealed class RiskEvaluator
 {

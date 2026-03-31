@@ -4,7 +4,10 @@ using System.Text.Json;
 using Kalshi.Integration.Application.Abstractions;
 
 namespace Kalshi.Integration.Application.Operations;
-
+/// <summary>
+/// Computes deterministic request hashes and stores replayable responses for endpoints
+/// that support idempotent writes.
+/// </summary>
 public sealed class IdempotencyService
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
@@ -58,6 +61,10 @@ public sealed class IdempotencyService
         return Convert.ToHexString(bytes);
     }
 }
+/// <summary>
+/// Defines the supported idempotency lookup status values.
+/// </summary>
+
 
 public enum IdempotencyLookupStatus
 {
@@ -65,6 +72,10 @@ public enum IdempotencyLookupStatus
     Replay,
     Conflict,
 }
+/// <summary>
+/// Represents the result of idempotency lookup.
+/// </summary>
+
 
 public sealed record IdempotencyLookupResult(IdempotencyLookupStatus Status, IdempotencyRecord? Record)
 {

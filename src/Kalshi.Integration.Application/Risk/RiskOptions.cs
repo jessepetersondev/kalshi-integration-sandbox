@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Kalshi.Integration.Application.Risk;
+/// <summary>
+/// Represents configuration for risk.
+/// </summary>
+
 
 public sealed class RiskOptions
 {

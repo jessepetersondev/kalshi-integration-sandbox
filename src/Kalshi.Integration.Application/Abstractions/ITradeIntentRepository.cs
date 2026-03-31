@@ -1,6 +1,10 @@
 using Kalshi.Integration.Domain.TradeIntents;
 
 namespace Kalshi.Integration.Application.Abstractions;
+/// <summary>
+/// Provides persistence operations for i trade intent.
+/// </summary>
+
 
 public interface ITradeIntentRepository
 {

@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Kalshi.Integration.Infrastructure.Messaging;
+/// <summary>
+/// Represents configuration for rabbit mq.
+/// </summary>
+
 
 public sealed class RabbitMqOptions
 {

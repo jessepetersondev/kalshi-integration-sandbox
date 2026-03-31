@@ -9,7 +9,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Kalshi.Integration.Api.Controllers;
-
+/// <summary>
+/// Issues development authentication tokens for local and test environments where
+/// interactive identity infrastructure is not available.
+/// </summary>
 [ApiController]
 [ApiVersion("1.0")]
 [AllowAnonymous]
@@ -103,8 +106,16 @@ public sealed class AuthController : ControllerBase
             || _jwtOptions.EnableDevelopmentTokenIssuance;
     }
 }
+/// <summary>
+/// Represents a request payload for dev token.
+/// </summary>
+
 
 public sealed record DevTokenRequest(string[]? Roles, string? Subject);
+/// <summary>
+/// Represents a response payload for dev token.
+/// </summary>
+
 
 public sealed record DevTokenResponse(
     string AccessToken,

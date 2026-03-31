@@ -10,7 +10,10 @@ using Kalshi.Integration.Domain.Positions;
 using Kalshi.Integration.Domain.TradeIntents;
 
 namespace Kalshi.Integration.Application.Trading;
-
+/// <summary>
+/// Coordinates trade-intent creation, order creation, and execution-update processing
+/// for the publisher application.
+/// </summary>
 public sealed class TradingService
 {
     private readonly ITradeIntentRepository _tradeIntentRepository;

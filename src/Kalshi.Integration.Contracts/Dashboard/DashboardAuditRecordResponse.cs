@@ -1,4 +1,8 @@
 namespace Kalshi.Integration.Contracts.Dashboard;
+/// <summary>
+/// Represents a response payload for dashboard audit record.
+/// </summary>
+
 
 public sealed record DashboardAuditRecordResponse(
     Guid Id,

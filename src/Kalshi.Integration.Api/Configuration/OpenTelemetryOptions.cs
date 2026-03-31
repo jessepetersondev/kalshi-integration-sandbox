@@ -1,6 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace Kalshi.Integration.Api.Configuration;
+/// <summary>
+/// Represents configuration for open telemetry.
+/// </summary>
+
 
 public sealed class OpenTelemetryOptions
 {

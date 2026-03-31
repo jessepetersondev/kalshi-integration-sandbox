@@ -2,6 +2,10 @@ using Kalshi.Integration.Domain.Executions;
 using Kalshi.Integration.Domain.Orders;
 
 namespace Kalshi.Integration.Application.Abstractions;
+/// <summary>
+/// Provides persistence operations for i order.
+/// </summary>
+
 
 public interface IOrderRepository
 {
